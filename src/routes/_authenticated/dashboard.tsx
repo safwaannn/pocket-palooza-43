@@ -28,7 +28,7 @@ function Dashboard() {
         .gte("date", start)
         .lte("date", end);
       if (error) throw error;
-      return data as { amount: string; type: "income" | "expense"; category_id: string | null }[];
+      return (data ?? []) as { amount: number; type: "income" | "expense"; category_id: string | null }[];
     },
   });
   const { data: categories = [] } = useCategories();

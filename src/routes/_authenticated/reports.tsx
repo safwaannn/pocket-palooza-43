@@ -42,7 +42,7 @@ function ReportsPage() {
         .gte("date", start)
         .lte("date", end);
       if (error) throw error;
-      return data as { amount: string; type: "income" | "expense"; category_id: string | null; date: string }[];
+      return (data ?? []) as { amount: number; type: "income" | "expense"; category_id: string | null; date: string }[];
     },
   });
 
