@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,21 +15,28 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useCategories, type Transaction } from "@/lib/finance-queries";
+import {
+  invalidateMoneyViews,
+  useCategories,
+  type Transaction,
+  type TransactionType,
+} from "@/lib/finance-queries";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 
 type Props = {
-  trigger?: React.ReactNode;
+  trigger?: ReactNode;
   initial?: Transaction;
-  onClose?: () => void;
   open?: boolean;
-  onOpenChange?: (o: boolean) => void;
+  onOpenChange?: (open: boolean) => void;
 };
+
+const today = () => new Date().toISOString().slice(0, 10);
 
 export function TransactionForm({ trigger, initial, open, onOpenChange }: Props) {
   const qc = useQueryClient();
@@ -37,48 +44,72 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
-  const setOpen = isControlled ? onOpenChange! : setInternalOpen;
+  const setOpen = isControlled ? (onOpenChange ?? (() => undefined)) : setInternalOpen;
 
-  const [type, setType] = useState<"income" | "expense">(initial?.type ?? "expense");
-  const [amount, setAmount] = useState<string>(initial ? String(initial.amount) : "");
-  const [categoryId, setCategoryId] = useState<string>(initial?.category_id ?? "");
-  const [date, setDate] = useState<string>(initial?.date ?? new Date().toISOString().slice(0, 10));
-  const [note, setNote] = useState<string>(initial?.note ?? "");
+  const [type, setType] = useState<TransactionType>(initial?.type ?? "expense");
+  const [amount, setAmount] = useState(initial ? String(initial.amount) : "");
+  const [categoryId, setCategoryId] = useState(initial?.category_id ?? "");
+  const [date, setDate] = useState(initial?.date ?? today());
+  const [note, setNote] = useState(initial?.note ?? "");
 
-  const filteredCats = categories.filter((c) => c.type === type);
+  useEffect(() => {
+    if (!isOpen) return;
+    setType(initial?.type ?? "expense");
+    setAmount(initial ? String(initial.amount) : "");
+    setCategoryId(initial?.category_id ?? "");
+    setDate(initial?.date ?? today());
+    setNote(initial?.note ?? "");
+  }, [initial, isOpen]);
+
+  const filteredCats = useMemo(
+    () => categories.filter((category) => category.type === type),
+    [categories, type],
+  );
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) throw new Error("Not signed in");
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("Not signed in");
+
       const payload = {
-        user_id: u.user.id,
+        user_id: userData.user.id,
         type,
         amount: Number(amount),
-        category_id: categoryId || null,
+        category_id: categoryId,
         date,
-        note: note || null,
+        note: note.trim() || null,
       };
+
       if (initial) {
         const { error } = await supabase.from("transactions").update(payload).eq("id", initial.id);
         if (error) throw error;
-      } else {
-        const { error } = await supabase.from("transactions").insert(payload);
-        if (error) throw error;
+        return;
       }
+
+      const { error } = await supabase.from("transactions").insert(payload);
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success(initial ? "Transaction updated" : "Transaction added");
-      qc.invalidateQueries({ queryKey: ["transactions"] });
-      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      invalidateMoneyViews(qc);
       setOpen(false);
       if (!initial) {
         setAmount("");
+        setCategoryId("");
         setNote("");
+        setDate(today());
       }
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (error: Error) => toast.error(error.message),
   });
+
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!amount || Number(amount) <= 0) return toast.error("Enter a valid amount");
+    if (!categoryId) return toast.error("Pick a category");
+    if (!date) return toast.error("Pick a date");
+    mutation.mutate();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setOpen}>
@@ -86,21 +117,24 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{initial ? "Edit transaction" : "Add transaction"}</DialogTitle>
+          <DialogDescription>
+            Record income and expenses with a category, date, and optional note.
+          </DialogDescription>
         </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!amount || Number(amount) <= 0) return toast.error("Enter a valid amount");
-            if (!categoryId) return toast.error("Pick a category");
-            mutation.mutate();
-          }}
-          className="space-y-4"
-        >
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={submit} className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Type</Label>
-              <Select value={type} onValueChange={(v) => { setType(v as "income" | "expense"); setCategoryId(""); }}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Label htmlFor="transaction-type">Type</Label>
+              <Select
+                value={type}
+                onValueChange={(value) => {
+                  setType(value as TransactionType);
+                  setCategoryId("");
+                }}
+              >
+                <SelectTrigger id="transaction-type">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="expense">Expense</SelectItem>
                   <SelectItem value="income">Income</SelectItem>
@@ -108,31 +142,64 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Amount (₹)</Label>
-              <Input type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
+              <Label htmlFor="transaction-amount">Amount (INR)</Label>
+              <Input
+                id="transaction-amount"
+                type="number"
+                min="0"
+                step="0.01"
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+              />
             </div>
           </div>
+
           <div className="space-y-2">
-            <Label>Category</Label>
+            <Label htmlFor="transaction-category">Category</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+              <SelectTrigger id="transaction-category">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
               <SelectContent>
-                {filteredCats.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}{c.user_id === null ? "" : " (custom)"}</SelectItem>
+                {filteredCats.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                    {category.user_id === null ? "" : " (custom)"}
+                  </SelectItem>
                 ))}
+                {filteredCats.length === 0 && (
+                  <div className="px-2 py-2 text-sm text-muted-foreground">
+                    Add a {type} category first.
+                  </div>
+                )}
               </SelectContent>
             </Select>
           </div>
+
           <div className="space-y-2">
-            <Label>Date</Label>
-            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            <Label htmlFor="transaction-date">Date</Label>
+            <Input
+              id="transaction-date"
+              type="date"
+              value={date}
+              onChange={(event) => setDate(event.target.value)}
+            />
           </div>
+
           <div className="space-y-2">
-            <Label>Note (optional)</Label>
-            <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} maxLength={255} />
+            <Label htmlFor="transaction-note">Note</Label>
+            <Textarea
+              id="transaction-note"
+              rows={3}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              maxLength={255}
+              placeholder="Optional"
+            />
           </div>
+
           <Button type="submit" className="w-full" disabled={mutation.isPending}>
-            {mutation.isPending ? "Saving…" : initial ? "Update" : "Add transaction"}
+            {mutation.isPending ? "Saving..." : initial ? "Update transaction" : "Add transaction"}
           </Button>
         </form>
       </DialogContent>

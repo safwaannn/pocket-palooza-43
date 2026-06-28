@@ -1,73 +1,113 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { useCategories, useBudgets } from "@/lib/finance-queries";
-import { currentMonthYear, formatINR, monthYearLabel, monthRange } from "@/lib/format";
+import {
+  invalidateMoneyViews,
+  useBudgets,
+  useCategories,
+  useMonthlySpending,
+} from "@/lib/finance-queries";
+import { currentMonthYear, formatINR, monthYearLabel } from "@/lib/format";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/budgets")({
-  head: () => ({ meta: [{ title: "Budgets — Paisa" }] }),
+  head: () => ({ meta: [{ title: "Budgets - Paisa" }] }),
   component: BudgetsPage,
 });
 
 function BudgetsPage() {
   const qc = useQueryClient();
-  const [my, setMy] = useState(currentMonthYear());
+  const [monthYear, setMonthYear] = useState(currentMonthYear());
   const { data: categories = [] } = useCategories();
-  const { data: budgets = [] } = useBudgets(my);
-  const expenseCats = categories.filter((c) => c.type === "expense");
-
-  const { start, end } = monthRange(my);
-  const { data: spent = {} } = useQuery({
-    queryKey: ["spent-by-cat", my],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("transactions")
-        .select("category_id,amount")
-        .eq("type", "expense")
-        .gte("date", start)
-        .lte("date", end);
-      if (error) throw error;
-      const out: Record<string, number> = {};
-      (data ?? []).forEach((r) => {
-        if (!r.category_id) return;
-        out[r.category_id] = (out[r.category_id] ?? 0) + Number(r.amount);
-      });
-      return out;
-    },
-  });
+  const { data: budgets = [], isLoading } = useBudgets(monthYear);
+  const { data: spent = {} } = useMonthlySpending(monthYear);
+  const expenseCats = categories.filter((category) => category.type === "expense");
 
   const [categoryId, setCategoryId] = useState("");
   const [limit, setLimit] = useState("");
+  const existingBudget = budgets.find((budget) => budget.category_id === categoryId);
+
+  useEffect(() => {
+    if (!categoryId) {
+      setLimit("");
+      return;
+    }
+    const budget = budgets.find((item) => item.category_id === categoryId);
+    setLimit(budget ? String(budget.limit_amount) : "");
+  }, [budgets, categoryId]);
+
+  const budgetRows = useMemo(
+    () =>
+      budgets
+        .map((budget) => {
+          const used = spent[budget.category_id] ?? 0;
+          const pct = budget.limit_amount > 0 ? (used / budget.limit_amount) * 100 : 0;
+          return {
+            ...budget,
+            used,
+            pct,
+            remaining: budget.limit_amount - used,
+            name: budget.category?.name ?? "Uncategorized",
+          };
+        })
+        .sort((a, b) => b.pct - a.pct),
+    [budgets, spent],
+  );
+
+  const totalLimit = budgetRows.reduce((total, budget) => total + budget.limit_amount, 0);
+  const totalSpent = budgetRows.reduce((total, budget) => total + budget.used, 0);
+  const totalRemaining = totalLimit - totalSpent;
+  const alerts = budgetRows.filter((budget) => budget.pct >= 80);
 
   const upsert = useMutation({
     mutationFn: async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) throw new Error("Not signed in");
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("Not signed in");
+
       const { error } = await supabase.from("budgets").upsert(
-        { user_id: u.user.id, category_id: categoryId, month_year: my, limit_amount: Number(limit) },
+        {
+          user_id: userData.user.id,
+          category_id: categoryId,
+          month_year: monthYear,
+          limit_amount: Number(limit),
+        },
         { onConflict: "user_id,category_id,month_year" },
       );
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Budget saved");
-      setLimit("");
+      toast.success(existingBudget ? "Budget updated" : "Budget saved");
       setCategoryId("");
-      qc.invalidateQueries({ queryKey: ["budgets"] });
+      invalidateMoneyViews(qc);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const del = useMutation({
@@ -76,95 +116,211 @@ function BudgetsPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Removed");
-      qc.invalidateQueries({ queryKey: ["budgets"] });
+      toast.success("Budget removed");
+      invalidateMoneyViews(qc);
     },
+    onError: (error: Error) => toast.error(error.message),
   });
-
-  const months: string[] = (() => {
-    const out: string[] = [];
-    const now = new Date();
-    for (let i = -2; i <= 3; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-      out.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
-    }
-    return out;
-  })();
 
   return (
     <AppShell title="Budgets">
-      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
-        <div className="space-y-1">
-          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Month</Label>
-          <Select value={my} onValueChange={setMy}>
-            <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {months.map((m) => <SelectItem key={m} value={m}>{monthYearLabel(m)}</SelectItem>)}
-            </SelectContent>
-          </Select>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="budget-month" className="text-xs uppercase text-muted-foreground">
+            Month
+          </Label>
+          <Input
+            id="budget-month"
+            type="month"
+            value={monthYear}
+            onChange={(event) => {
+              if (!event.target.value) return;
+              setMonthYear(event.target.value);
+              setCategoryId("");
+            }}
+            className="w-56"
+          />
         </div>
+        <div className="text-sm text-muted-foreground">{monthYearLabel(monthYear)}</div>
+      </div>
+
+      {alerts.length > 0 && (
+        <Alert className="mb-6 border-warning/40 bg-warning/10">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Budget attention needed</AlertTitle>
+          <AlertDescription className="space-y-1">
+            {alerts.map((budget) => (
+              <div key={budget.id}>
+                <strong>{budget.name}</strong> is{" "}
+                {budget.pct >= 100 ? "over budget" : `${Math.round(budget.pct)}% used`}.
+              </div>
+            ))}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <SummaryCard label="Planned" value={formatINR(totalLimit)} />
+        <SummaryCard label="Spent" value={formatINR(totalSpent)} tone="destructive" />
+        <SummaryCard
+          label={totalRemaining >= 0 ? "Remaining" : "Over budget"}
+          value={formatINR(Math.abs(totalRemaining))}
+          tone={totalRemaining >= 0 ? "success" : "destructive"}
+        />
       </div>
 
       <Card className="mb-6">
-        <CardHeader><CardTitle>Set or update budget</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Set monthly limit</CardTitle>
+        </CardHeader>
         <CardContent>
           <form
-            className="flex flex-col md:flex-row gap-3"
-            onSubmit={(e) => {
-              e.preventDefault();
+            className="flex flex-col gap-3 md:flex-row"
+            onSubmit={(event) => {
+              event.preventDefault();
               if (!categoryId) return toast.error("Pick a category");
               if (!limit || Number(limit) <= 0) return toast.error("Enter a valid limit");
               upsert.mutate();
             }}
           >
             <div className="flex-1 space-y-2">
-              <Label>Category</Label>
+              <Label htmlFor="budget-category">Category</Label>
               <Select value={categoryId} onValueChange={setCategoryId}>
-                <SelectTrigger><SelectValue placeholder="Select expense category" /></SelectTrigger>
+                <SelectTrigger id="budget-category">
+                  <SelectValue placeholder="Select expense category" />
+                </SelectTrigger>
                 <SelectContent>
-                  {expenseCats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  {expenseCats.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="md:w-48 space-y-2">
-              <Label>Monthly limit (₹)</Label>
-              <Input type="number" min="0" step="1" value={limit} onChange={(e) => setLimit(e.target.value)} />
+            <div className="space-y-2 md:w-52">
+              <Label htmlFor="budget-limit">Monthly limit (INR)</Label>
+              <Input
+                id="budget-limit"
+                type="number"
+                min="0"
+                step="1"
+                value={limit}
+                onChange={(event) => setLimit(event.target.value)}
+              />
             </div>
-            <Button type="submit" className="md:self-end" disabled={upsert.isPending}>Save</Button>
+            <Button type="submit" className="md:self-end" disabled={upsert.isPending}>
+              {upsert.isPending ? "Saving..." : existingBudget ? "Update budget" : "Save budget"}
+            </Button>
           </form>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>{monthYearLabel(my)} budgets</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>{monthYearLabel(monthYear)} budgets</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
-          {budgets.length === 0 && <p className="text-sm text-muted-foreground">No budgets for this month.</p>}
-          {budgets.map((b) => {
-            const cat = categories.find((c) => c.id === b.category_id);
-            const used = spent[b.category_id] ?? 0;
-            const pct = (used / b.limit_amount) * 100;
-            return (
-              <div key={b.id}>
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="font-medium">{cat?.name ?? "—"}</span>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-sm ${pct >= 100 ? "text-destructive" : pct >= 80 ? "text-warning-foreground" : "text-muted-foreground"}`}>
-                      {formatINR(used)} / {formatINR(b.limit_amount)} ({Math.round(pct)}%)
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading budgets...</p>
+          ) : budgetRows.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No budgets for this month. Add limits for your expense categories.
+            </p>
+          ) : (
+            budgetRows.map((budget) => (
+              <div key={budget.id} className="space-y-2">
+                <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                  <div>
+                    <div className="font-medium">{budget.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {budget.remaining >= 0
+                        ? `${formatINR(budget.remaining)} remaining`
+                        : `${formatINR(Math.abs(budget.remaining))} over`}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 sm:justify-end">
+                    <span
+                      className={`text-sm ${
+                        budget.pct >= 100
+                          ? "text-destructive"
+                          : budget.pct >= 80
+                            ? "text-warning-foreground"
+                            : "text-muted-foreground"
+                      }`}
+                    >
+                      {formatINR(budget.used)} / {formatINR(budget.limit_amount)} (
+                      {Math.round(budget.pct)}%)
                     </span>
-                    <Button size="icon" variant="ghost" onClick={() => del.mutate(b.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="icon" variant="ghost">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Remove {budget.name} budget</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remove budget?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This removes the monthly limit for {budget.name}. Transactions are not
+                            deleted.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={() => del.mutate(budget.id)}
+                          >
+                            Remove
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
                 <Progress
-                  value={Math.min(100, pct)}
-                  className={pct >= 100 ? "[&>div]:bg-destructive" : pct >= 80 ? "[&>div]:bg-warning" : ""}
+                  value={Math.min(100, budget.pct)}
+                  className={
+                    budget.pct >= 100
+                      ? "[&>div]:bg-destructive"
+                      : budget.pct >= 80
+                        ? "[&>div]:bg-warning"
+                        : ""
+                  }
                 />
               </div>
-            );
-          })}
+            ))
+          )}
         </CardContent>
       </Card>
     </AppShell>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: string;
+  tone?: "default" | "success" | "destructive";
+}) {
+  const valueClass =
+    tone === "success"
+      ? "text-success"
+      : tone === "destructive"
+        ? "text-destructive"
+        : "text-foreground";
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <div className="text-xs uppercase text-muted-foreground">{label}</div>
+        <div className={`mt-1 text-2xl font-semibold ${valueClass}`}>{value}</div>
+      </CardContent>
+    </Card>
   );
 }
