@@ -6,10 +6,12 @@ import { currentMonthYear, monthRange } from "@/lib/format";
  * and insert any newly-crossed 80% or 100% threshold rows. Unique constraint
  * prevents duplicates, so we can blindly upsert with ignoreDuplicates.
  */
-export async function detectBudgetAlerts() {
+export type FreshAlert = { categoryName: string; threshold: 80 | 100 };
+
+export async function detectBudgetAlerts(): Promise<FreshAlert[]> {
   const { data: userData } = await supabase.auth.getUser();
   const user = userData.user;
-  if (!user) return [] as { categoryName: string; threshold: number }[];
+  if (!user) return [];
 
   const monthYear = currentMonthYear();
   const { start, end } = monthRange(monthYear);
