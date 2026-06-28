@@ -7,6 +7,7 @@ import {
   Tags,
   Target,
   PieChart,
+  Settings,
   LogOut,
   Wallet,
   Menu,
@@ -21,6 +22,7 @@ const nav = [
   { to: "/categories", label: "Categories", icon: Tags },
   { to: "/budgets", label: "Budgets", icon: Target },
   { to: "/reports", label: "Reports", icon: PieChart },
+  { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
