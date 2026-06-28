@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { detectBudgetAlerts } from "@/lib/budget-alerts";
 import {
   Dialog,
   DialogContent,
