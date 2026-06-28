@@ -44,7 +44,7 @@ export async function detectBudgetAlerts(): Promise<FreshAlert[]> {
     threshold: number;
   };
   const rows: Row[] = [];
-  const fresh: { categoryName: string; threshold: number }[] = [];
+  const fresh: FreshAlert[] = [];
 
   for (const b of budgets) {
     const limit = Number(b.limit_amount);
