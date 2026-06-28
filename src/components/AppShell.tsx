@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard,
@@ -7,6 +7,7 @@ import {
   Tags,
   Target,
   PieChart,
+  Bell,
   Settings,
   LogOut,
   Wallet,
@@ -21,17 +22,35 @@ const nav = [
   { to: "/transactions", label: "Transactions", icon: Receipt },
   { to: "/categories", label: "Categories", icon: Tags },
   { to: "/budgets", label: "Budgets", icon: Target },
+  { to: "/alerts", label: "Alerts", icon: Bell, badgeKey: "alerts" as const },
   { to: "/reports", label: "Reports", icon: PieChart },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
+function useUnreadAlerts() {
+  return useQuery({
+    queryKey: ["budget-alerts", "unread-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("budget_alerts")
+        .select("*", { count: "exact", head: true })
+        .eq("acknowledged", false);
+      if (error) return 0;
+      return count ?? 0;
+    },
+    refetchOnWindowFocus: true,
+  });
+}
+
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { data: unread = 0 } = useUnreadAlerts();
   return (
     <nav className="flex flex-col gap-1">
       {nav.map((item) => {
         const Icon = item.icon;
         const active = pathname === item.to;
+        const showBadge = "badgeKey" in item && item.badgeKey === "alerts" && unread > 0;
         return (
           <Link
             key={item.to}
@@ -44,7 +63,18 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             }`}
           >
             <Icon className="h-4 w-4" />
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+            {showBadge && (
+              <span
+                className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold ${
+                  active
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-destructive text-destructive-foreground"
+                }`}
+              >
+                {unread}
+              </span>
+            )}
           </Link>
         );
       })}

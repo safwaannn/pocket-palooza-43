@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      budget_alerts: {
+        Row: {
+          acknowledged: boolean
+          category_id: string
+          created_at: string
+          emailed: boolean
+          id: string
+          month_year: string
+          threshold: number
+          user_id: string
+        }
+        Insert: {
+          acknowledged?: boolean
+          category_id: string
+          created_at?: string
+          emailed?: boolean
+          id?: string
+          month_year: string
+          threshold: number
+          user_id: string
+        }
+        Update: {
+          acknowledged?: boolean
+          category_id?: string
+          created_at?: string
+          emailed?: boolean
+          id?: string
+          month_year?: string
+          threshold?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_alerts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budgets: {
         Row: {
           category_id: string

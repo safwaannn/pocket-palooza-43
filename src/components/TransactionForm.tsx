@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { detectBudgetAlerts } from "@/lib/budget-alerts";
 import {
   Dialog,
   DialogContent,
@@ -89,7 +90,7 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
       const { error } = await supabase.from("transactions").insert(payload);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success(initial ? "Transaction updated" : "Transaction added");
       invalidateMoneyViews(qc);
       setOpen(false);
@@ -98,6 +99,17 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
         setCategoryId("");
         setNote("");
         setDate(today());
+      }
+      try {
+        const fresh = await detectBudgetAlerts();
+        fresh.forEach((a) =>
+          a.threshold === 100
+            ? toast.error(`${a.categoryName} is over budget this month`)
+            : toast.warning(`${a.categoryName} has used 80% of its budget`),
+        );
+        if (fresh.length) qc.invalidateQueries({ queryKey: ["budget-alerts"] });
+      } catch {
+        /* non-fatal */
       }
     },
     onError: (error: Error) => toast.error(error.message),
