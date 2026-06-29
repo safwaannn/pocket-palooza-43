@@ -12,10 +12,6 @@ import {
   LogOut,
   Wallet,
   Menu,
-  Sparkles,
-  Trophy,
-  LifeBuoy,
-  BellRing,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -26,12 +22,8 @@ const nav = [
   { to: "/transactions", label: "Transactions", icon: Receipt },
   { to: "/categories", label: "Categories", icon: Tags },
   { to: "/budgets", label: "Budgets", icon: Target },
-  { to: "/goals", label: "Goals", icon: Trophy },
   { to: "/alerts", label: "Alerts", icon: Bell, badgeKey: "alerts" as const },
   { to: "/reports", label: "Reports", icon: PieChart },
-  { to: "/insights", label: "Insights", icon: Sparkles },
-  { to: "/notifications", label: "Notifications", icon: BellRing },
-  { to: "/support", label: "Support", icon: LifeBuoy },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
