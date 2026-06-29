@@ -5,6 +5,21 @@ export const formatINR = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n || 0);
 
+export const formatPercent = (n: number, digits = 0) =>
+  `${(n || 0).toFixed(digits)}%`;
+
+export const formatDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+export const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
 export const currentMonthYear = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;

@@ -12,6 +12,10 @@ import {
   LogOut,
   Wallet,
   Menu,
+  Sparkles,
+  Trophy,
+  LifeBuoy,
+  BellRing,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -22,8 +26,12 @@ const nav = [
   { to: "/transactions", label: "Transactions", icon: Receipt },
   { to: "/categories", label: "Categories", icon: Tags },
   { to: "/budgets", label: "Budgets", icon: Target },
+  { to: "/goals", label: "Goals", icon: Trophy },
   { to: "/alerts", label: "Alerts", icon: Bell, badgeKey: "alerts" as const },
   { to: "/reports", label: "Reports", icon: PieChart },
+  { to: "/insights", label: "Insights", icon: Sparkles },
+  { to: "/notifications", label: "Notifications", icon: BellRing },
+  { to: "/support", label: "Support", icon: LifeBuoy },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -107,7 +115,7 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
       {/* Desktop sidebar */}
       <aside className="hidden md:flex w-64 flex-col border-r bg-card">
         {Brand}
-        <div className="px-3 mt-2 flex-1">
+        <div className="px-3 mt-2 flex-1 overflow-y-auto">
           <NavList />
         </div>
         <div className="p-3 border-t">
@@ -128,7 +136,7 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-64">
               {Brand}
-              <div className="px-3">
+              <div className="px-3 overflow-y-auto max-h-[calc(100vh-160px)]">
                 <NavList />
               </div>
               <div className="p-3 mt-4 border-t">
