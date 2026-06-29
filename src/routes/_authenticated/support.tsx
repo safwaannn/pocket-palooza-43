@@ -10,7 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { LifeBuoy, Mail, BookOpen } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/help")({
+export const Route = createFileRoute("/_authenticated/support")({
   head: () => ({ meta: [{ title: "Help — Paisa" }] }),
   component: InAppHelp,
 });

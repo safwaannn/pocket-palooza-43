@@ -9,20 +9,48 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as HelpRouteImport } from './routes/help'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
+import { Route as AuthenticatedSupportRouteImport } from './routes/_authenticated/support'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedInsightsRouteImport } from './routes/_authenticated/insights'
+import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCategoriesRouteImport } from './routes/_authenticated/categories'
 import { Route as AuthenticatedBudgetsRouteImport } from './routes/_authenticated/budgets'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -40,6 +68,11 @@ const AuthenticatedTransactionsRoute =
     path: '/transactions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSupportRoute = AuthenticatedSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -48,6 +81,22 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInsightsRoute = AuthenticatedInsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
+  id: '/goals',
+  path: '/goals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -73,89 +122,169 @@ const AuthenticatedAlertsRoute = AuthenticatedAlertsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/help': typeof HelpRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/alerts': typeof AuthenticatedAlertsRoute
   '/budgets': typeof AuthenticatedBudgetsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/goals': typeof AuthenticatedGoalsRoute
+  '/insights': typeof AuthenticatedInsightsRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/support': typeof AuthenticatedSupportRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/help': typeof HelpRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/alerts': typeof AuthenticatedAlertsRoute
   '/budgets': typeof AuthenticatedBudgetsRoute
   '/categories': typeof AuthenticatedCategoriesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/goals': typeof AuthenticatedGoalsRoute
+  '/insights': typeof AuthenticatedInsightsRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/support': typeof AuthenticatedSupportRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/help': typeof HelpRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
   '/_authenticated/budgets': typeof AuthenticatedBudgetsRoute
   '/_authenticated/categories': typeof AuthenticatedCategoriesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/goals': typeof AuthenticatedGoalsRoute
+  '/_authenticated/insights': typeof AuthenticatedInsightsRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/support': typeof AuthenticatedSupportRoute
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/auth'
+    | '/help'
+    | '/privacy'
+    | '/terms'
     | '/alerts'
     | '/budgets'
     | '/categories'
     | '/dashboard'
+    | '/goals'
+    | '/insights'
+    | '/notifications'
     | '/reports'
     | '/settings'
+    | '/support'
     | '/transactions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/auth'
+    | '/help'
+    | '/privacy'
+    | '/terms'
     | '/alerts'
     | '/budgets'
     | '/categories'
     | '/dashboard'
+    | '/goals'
+    | '/insights'
+    | '/notifications'
     | '/reports'
     | '/settings'
+    | '/support'
     | '/transactions'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/about'
     | '/auth'
+    | '/help'
+    | '/privacy'
+    | '/terms'
     | '/_authenticated/alerts'
     | '/_authenticated/budgets'
     | '/_authenticated/categories'
     | '/_authenticated/dashboard'
+    | '/_authenticated/goals'
+    | '/_authenticated/insights'
+    | '/_authenticated/notifications'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
+    | '/_authenticated/support'
     | '/_authenticated/transactions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
+  HelpRoute: typeof HelpRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -179,6 +308,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/support': {
+      id: '/_authenticated/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof AuthenticatedSupportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -191,6 +327,27 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/insights': {
+      id: '/_authenticated/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof AuthenticatedInsightsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/goals': {
+      id: '/_authenticated/goals'
+      path: '/goals'
+      fullPath: '/goals'
+      preLoaderRoute: typeof AuthenticatedGoalsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -229,8 +386,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBudgetsRoute: typeof AuthenticatedBudgetsRoute
   AuthenticatedCategoriesRoute: typeof AuthenticatedCategoriesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
+  AuthenticatedInsightsRoute: typeof AuthenticatedInsightsRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSupportRoute: typeof AuthenticatedSupportRoute
   AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
 }
 
@@ -239,8 +400,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBudgetsRoute: AuthenticatedBudgetsRoute,
   AuthenticatedCategoriesRoute: AuthenticatedCategoriesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
+  AuthenticatedInsightsRoute: AuthenticatedInsightsRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSupportRoute: AuthenticatedSupportRoute,
   AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
 }
 
@@ -250,18 +415,12 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
+  HelpRoute: HelpRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
