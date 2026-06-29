@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTransactions } from "@/lib/finance-queries";
-import { formatINR } from "@/lib/format";
+import { formatINR, monthsAgo } from "@/lib/format";
 import {
   Bar,
   BarChart,
@@ -29,13 +29,6 @@ export const Route = createFileRoute("/_authenticated/reports")({
 });
 
 const today = () => new Date().toISOString().slice(0, 10);
-
-const monthsAgo = (count: number) => {
-  const date = new Date();
-  date.setMonth(date.getMonth() - count);
-  date.setDate(1);
-  return date.toISOString().slice(0, 10);
-};
 
 const CHART_COLORS = [
   "var(--chart-1)",
