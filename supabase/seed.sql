@@ -10,7 +10,7 @@
 -- ── 1. Demo user ─────────────────────────────────────────────
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'demo@paisa.dev') THEN
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'safwangharemt@gmail.com') THEN
     INSERT INTO auth.users (
       id, aud, role, email,
       encrypted_password,
@@ -20,10 +20,10 @@ BEGIN
       confirmation_token, recovery_token,
       is_sso_user, is_super_admin
     ) VALUES (
-      'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14',
       'authenticated', 'authenticated',
-      'demo@paisa.dev',
-      crypt('demo1234', gen_salt('bf')),
+      'safwangharemt@gmail.com',
+      crypt('sg80808080', gen_salt('bf')),
       now(), now(),
       '{"provider":"email","providers":["email"]}',
       '{"name":"Demo User"}',
@@ -36,10 +36,10 @@ BEGIN
       id, user_id, provider_id, provider,
       identity_data, last_sign_in_at, created_at, updated_at
     ) VALUES (
-      'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-      'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-      'demo@paisa.dev', 'email',
-      '{"sub":"a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11","email":"demo@paisa.dev"}',
+      'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14',
+      'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14',
+      'safwangharemt@gmail.com', 'email',
+      '{"sub":"a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14","email":"safwangharemt@gmail.com"}',
       now(), now(), now()
     );
   END IF;
@@ -47,7 +47,7 @@ END $$;
 
 -- Profile (trigger does this on real signup; seed must do it manually)
 INSERT INTO public.profiles (id, name)
-VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Demo User')
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Demo User')
 ON CONFLICT (id) DO NOTHING;
 
 -- ── 2. Resolve category IDs into a temp table ─────────────────
@@ -60,7 +60,7 @@ CREATE TEMP TABLE _cats AS
 WITH c AS (SELECT id, name FROM _cats)
 INSERT INTO public.transactions (user_id, category_id, amount, type, note, date)
 SELECT
-  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14',
   c.id,
   t.amount,
   t.type::public.transaction_type,
@@ -120,7 +120,7 @@ ON CONFLICT DO NOTHING;
 WITH c AS (SELECT id, name FROM _cats)
 INSERT INTO public.budgets (user_id, category_id, month_year, limit_amount)
 SELECT
-  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14',
   c.id,
   '2026-06',
   b.limit_amount
@@ -140,7 +140,7 @@ ON CONFLICT (user_id, category_id, month_year) DO NOTHING;
 WITH c AS (SELECT id, name FROM _cats)
 INSERT INTO public.budgets (user_id, category_id, month_year, limit_amount)
 SELECT
-  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14',
   c.id,
   '2026-05',
   b.limit_amount
@@ -163,7 +163,7 @@ ON CONFLICT (user_id, category_id, month_year) DO NOTHING;
 WITH c AS (SELECT id, name FROM _cats)
 INSERT INTO public.budget_alerts (user_id, category_id, month_year, threshold, acknowledged)
 SELECT
-  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14',
   c.id,
   '2026-06',
   a.threshold,
@@ -182,7 +182,7 @@ ON CONFLICT (user_id, category_id, month_year, threshold) DO NOTHING;
 WITH c AS (SELECT id, name FROM _cats)
 INSERT INTO public.budget_alerts (user_id, category_id, month_year, threshold, acknowledged)
 SELECT
-  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14',
   c.id,
   '2026-05',
   a.threshold,
