@@ -1,5 +1,5 @@
 import { type QueryClient, useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/supabase/client";
 import { monthRange } from "@/lib/format";
 
 export type TransactionType = "income" | "expense";

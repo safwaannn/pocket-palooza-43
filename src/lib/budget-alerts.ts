@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/supabase/client";
 import { currentMonthYear, monthRange } from "@/lib/format";
 
 /**

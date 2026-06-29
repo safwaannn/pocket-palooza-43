@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
