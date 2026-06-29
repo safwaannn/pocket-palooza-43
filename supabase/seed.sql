@@ -116,7 +116,27 @@ FROM (VALUES
 JOIN c ON c.name = t.cat_name
 ON CONFLICT DO NOTHING;
 
--- ── 4. Budgets — June 2026 ────────────────────────────────────
+-- ── 4. Budgets — April 2026 ──────────────────────────────────
+WITH c AS (SELECT id, name FROM _cats)
+INSERT INTO public.budgets (user_id, category_id, month_year, limit_amount)
+SELECT
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14',
+  c.id,
+  '2026-04',
+  b.limit_amount
+FROM (VALUES
+  ('Food',           9000),
+  ('Rent',          15000),
+  ('Travel',         3000),
+  ('Shopping',       5000),
+  ('Bills',          2500),
+  ('Entertainment',  2000),
+  ('Health',         1500)
+) AS b(cat_name, limit_amount)
+JOIN c ON c.name = b.cat_name
+ON CONFLICT (user_id, category_id, month_year) DO NOTHING;
+
+-- ── 5. Budgets — June 2026 ────────────────────────────────────
 WITH c AS (SELECT id, name FROM _cats)
 INSERT INTO public.budgets (user_id, category_id, month_year, limit_amount)
 SELECT
