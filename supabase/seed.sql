@@ -26,7 +26,7 @@ BEGIN
       crypt('sg80808080', gen_salt('bf')),
       now(), now(),
       '{"provider":"email","providers":["email"]}',
-      '{"name":"Demo User"}',
+      '{"name":"Safwan Ghare"}',
       now(), now(),
       '', '',
       false, false
@@ -47,7 +47,7 @@ END $$;
 
 -- Profile (trigger does this on real signup; seed must do it manually)
 INSERT INTO public.profiles (id, name)
-VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Demo User')
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'Safwan Ghare')
 ON CONFLICT (id) DO NOTHING;
 
 -- ── 2. Resolve category IDs into a temp table ─────────────────
