@@ -70,7 +70,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Paisa — Personal Finance Tracker" },
-      { name: "description", content: "Track income, expenses and budgets with clean visual reports." },
+      { name: "description", content: "Paisa helps you track income, expenses and budgets with clear charts and real-time alerts." },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
   }),
