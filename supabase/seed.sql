@@ -176,7 +176,25 @@ FROM (VALUES
 JOIN c ON c.name = b.cat_name
 ON CONFLICT (user_id, category_id, month_year) DO NOTHING;
 
--- ── 6. Budget alerts — June 2026 ─────────────────────────────
+-- ── 6. Budget alerts — April 2026 ───────────────────────────
+-- Travel (₹5.7k spent of ₹3k limit → both thresholds breached)
+WITH c AS (SELECT id, name FROM _cats)
+INSERT INTO public.budget_alerts (user_id, category_id, month_year, threshold, acknowledged)
+SELECT
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14',
+  c.id,
+  '2026-04',
+  a.threshold,
+  a.acknowledged
+FROM (VALUES
+  ('Travel',  80, true),
+  ('Travel', 100, true),
+  ('Shopping', 80, true)
+) AS a(cat_name, threshold, acknowledged)
+JOIN c ON c.name = a.cat_name
+ON CONFLICT (user_id, category_id, month_year, threshold) DO NOTHING;
+
+-- ── 8. Budget alerts — June 2026 ─────────────────────────────
 -- Travel (₹5k spent of ₹5k limit → 100% alert)
 -- Shopping (₹7.2k spent of ₹6k limit → 100% alert + acknowledged 80%)
 -- Entertainment (₹3.1k spent of ₹4k limit → 80% alert)
