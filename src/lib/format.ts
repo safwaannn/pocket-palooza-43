@@ -31,6 +31,13 @@ export const monthYearLabel = (my: string) => {
   return d.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 };
 
+export const monthsAgo = (count: number): string => {
+  const date = new Date();
+  date.setMonth(date.getMonth() - count);
+  date.setDate(1);
+  return date.toISOString().slice(0, 10);
+};
+
 export const monthRange = (my: string): { start: string; end: string } => {
   const [y, m] = my.split("-").map(Number);
   const start = new Date(y, m - 1, 1);
