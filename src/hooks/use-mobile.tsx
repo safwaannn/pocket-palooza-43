@@ -2,8 +2,13 @@ import * as React from "react";
 
 const MOBILE_BREAKPOINT = 768;
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
+/**
+ * Hook to detect if the current viewport is mobile-sized.
+ * Uses a media query listener for responsive detection.
+ * @returns boolean indicating if viewport width is less than MOBILE_BREAKPOINT
+ */
+export function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
@@ -15,5 +20,5 @@ export function useIsMobile() {
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  return !!isMobile;
+  return isMobile;
 }
