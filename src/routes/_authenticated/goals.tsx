@@ -285,19 +285,51 @@ function GoalsPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Progress value={pct} />
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {formatINR(g.saved)} of {formatINR(g.target)}
-                      </span>
-                      <span className="font-medium">{pct.toFixed(0)}%</span>
+                  <div className="space-y-3">
+                    <div className="flex items-end justify-between gap-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Saved</p>
+                        <p className="text-xl font-bold tracking-tight">{formatINR(g.saved)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">Target</p>
+                        <p className="text-lg font-semibold">{formatINR(g.target)}</p>
+                      </div>
                     </div>
-                    {!isDone && (
-                      <p className="text-xs text-muted-foreground">
-                        {formatINR(remaining)} to go
-                      </p>
-                    )}
+
+                    <div className="relative">
+                      <Progress
+                        value={pct}
+                        className="h-3"
+                        aria-label={`${g.name} progress`}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-[10px] font-semibold leading-none drop-shadow-sm">
+                          {pct.toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-sm">
+                      <span
+                        className={`font-medium ${
+                          isDone
+                            ? "text-[color:var(--success)]"
+                            : pct >= 80
+                              ? "text-[color:var(--warning)]"
+                              : "text-muted-foreground"
+                        }`}
+                      >
+                        {isDone
+                          ? "Goal reached"
+                          : pct >= 80
+                            ? "Almost there"
+                            : `${formatINR(remaining)} to go`}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {formatINR(g.saved)} / {formatINR(g.target)}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap gap-2 pt-1">
