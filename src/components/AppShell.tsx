@@ -56,22 +56,19 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             key={item.to}
             to={item.to}
             onClick={onNavigate}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+            className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
               active
-                ? "bg-primary text-primary-foreground"
-                : "text-foreground/70 hover:bg-accent hover:text-foreground"
+                ? "bg-white/10 text-white shadow-glow"
+                : "text-white/60 hover:bg-white/5 hover:text-white"
             }`}
           >
-            <Icon className="h-4 w-4" />
+            {active && (
+              <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-gradient-primary" />
+            )}
+            <Icon className={`h-4 w-4 transition-colors ${active ? "text-primary-glow" : ""}`} />
             <span className="flex-1">{item.label}</span>
             {showBadge && (
-              <span
-                className={`inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold ${
-                  active
-                    ? "bg-primary-foreground/20 text-primary-foreground"
-                    : "bg-destructive text-destructive-foreground"
-                }`}
-              >
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-semibold text-destructive-foreground">
                 {unread}
               </span>
             )}
@@ -94,54 +91,70 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
   };
 
   const Brand = (
-    <div className="flex items-center gap-2 px-3 py-4">
-      <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center">
+    <div className="flex items-center gap-2.5 px-4 py-5">
+      <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary shadow-glow">
         <Wallet className="h-5 w-5 text-primary-foreground" />
       </div>
-      <span className="text-lg font-semibold tracking-tight">Paisa</span>
+      <div className="flex flex-col leading-none">
+        <span className="font-display text-xl font-bold tracking-tight text-white">Paisa</span>
+        <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-white/40">Finance OS</span>
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="flex min-h-screen">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-64 flex-col border-r bg-card">
+      <aside className="hidden md:flex w-64 flex-col bg-gradient-sidebar text-white">
         {Brand}
-        <div className="px-3 mt-2 flex-1 overflow-y-auto">
+        <div className="mt-2 flex-1 overflow-y-auto px-3">
           <NavList />
         </div>
-        <div className="p-3 border-t">
-          <Button variant="ghost" className="w-full justify-start gap-3" onClick={signOut}>
+        <div className="border-t border-white/10 p-3">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 text-white/70 hover:bg-white/10 hover:text-white"
+            onClick={signOut}
+          >
             <LogOut className="h-4 w-4" />
             Sign out
           </Button>
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b bg-card flex items-center px-4 md:px-6 gap-3">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/60 bg-card/70 px-4 backdrop-blur-xl md:px-8">
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64">
+            <SheetContent side="left" className="w-64 bg-gradient-sidebar p-0 text-white border-r-0">
               {Brand}
-              <div className="px-3 overflow-y-auto max-h-[calc(100vh-160px)]">
+              <div className="max-h-[calc(100vh-160px)] overflow-y-auto px-3">
                 <NavList />
               </div>
-              <div className="p-3 mt-4 border-t">
-                <Button variant="ghost" className="w-full justify-start gap-3" onClick={signOut}>
+              <div className="mt-4 border-t border-white/10 p-3">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 text-white/70 hover:bg-white/10 hover:text-white"
+                  onClick={signOut}
+                >
                   <LogOut className="h-4 w-4" />
                   Sign out
                 </Button>
               </div>
             </SheetContent>
           </Sheet>
-          <h1 className="text-lg font-semibold">{title}</h1>
+          <h1 className="font-display text-lg font-semibold tracking-tight">{title}</h1>
+          <div className="ml-auto hidden items-center gap-2 sm:flex">
+            <span className="rounded-full border border-border/70 bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+              ₹ INR
+            </span>
+          </div>
         </header>
-        <main className="flex-1 p-4 md:p-8 overflow-x-hidden">{children}</main>
+        <main className="flex-1 overflow-x-hidden p-4 md:p-8">{children}</main>
       </div>
     </div>
   );
