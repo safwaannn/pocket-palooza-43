@@ -1,6 +1,14 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
+/**
+ * EmptyState component displays a placeholder when no data is available.
+ * Shows an icon, title, optional description, and optional action button.
+ * @param icon - Lucide icon component to display
+ * @param title - Main heading text
+ * @param description - Optional descriptive text
+ * @param action - Optional action element (e.g., button)
+ */
 export function EmptyState({
   icon: Icon,
   title,
