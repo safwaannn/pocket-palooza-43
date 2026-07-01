@@ -26,19 +26,25 @@ const faqs = [
 function InAppHelp() {
   return (
     <AppShell title="Help">
-      <PageHeader title="Need a hand?" description="Quick answers and ways to reach us." />
+      <PageHeader eyebrow="Support" title="Need a hand?" description="Quick answers and ways to reach us." />
 
       <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <Card><CardContent className="p-5 flex items-center gap-3">
-          <BookOpen className="h-5 w-5 text-primary" />
+        <Card className="hover:shadow-elegant transition-shadow"><CardContent className="p-5 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-glow">
+            <BookOpen className="h-5 w-5 text-primary-foreground" />
+          </div>
           <div><p className="font-medium">Guides</p><p className="text-xs text-muted-foreground">Quick walkthroughs</p></div>
         </CardContent></Card>
-        <Card><CardContent className="p-5 flex items-center gap-3">
-          <LifeBuoy className="h-5 w-5 text-primary" />
+        <Card className="hover:shadow-elegant transition-shadow"><CardContent className="p-5 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-glow">
+            <LifeBuoy className="h-5 w-5 text-primary-foreground" />
+          </div>
           <div><p className="font-medium">Status</p><p className="text-xs text-muted-foreground">All systems normal</p></div>
         </CardContent></Card>
-        <Card><CardContent className="p-5 flex items-center gap-3">
-          <Mail className="h-5 w-5 text-primary" />
+        <Card className="hover:shadow-elegant transition-shadow"><CardContent className="p-5 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-glow">
+            <Mail className="h-5 w-5 text-primary-foreground" />
+          </div>
           <div><p className="font-medium">Email us</p><p className="text-xs text-muted-foreground">hello@paisa.app</p></div>
         </CardContent></Card>
       </div>
