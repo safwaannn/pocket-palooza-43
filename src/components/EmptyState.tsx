@@ -1,14 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-/**
- * EmptyState component displays a placeholder when no data is available.
- * Shows an icon, title, optional description, and optional action button.
- * @param icon - Lucide icon component to display
- * @param title - Main heading text
- * @param description - Optional descriptive text
- * @param action - Optional action element (e.g., button)
- */
 export function EmptyState({
   icon: Icon,
   title,
@@ -21,15 +13,18 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-16 px-6 rounded-2xl border border-dashed bg-card/40">
-      <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center mb-4">
-        <Icon className="h-7 w-7 text-accent-foreground" />
+    <div className="relative flex flex-col items-center justify-center text-center py-20 px-6 rounded-3xl border border-dashed border-primary/20 bg-gradient-to-br from-accent/30 via-card to-card overflow-hidden">
+      <div className="absolute inset-0 -z-10 opacity-40 [background:radial-gradient(circle_at_top,color-mix(in_oklab,var(--primary)_18%,transparent),transparent_60%)]" />
+      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center mb-5 shadow-glow">
+        <Icon className="h-8 w-8 text-primary-foreground" />
       </div>
-      <h3 className="text-lg font-semibold">{title}</h3>
+      <h3 className="font-display text-xl font-semibold">{title}</h3>
       {description && (
-        <p className="text-sm text-muted-foreground mt-1 max-w-md">{description}</p>
+        <p className="text-sm text-muted-foreground mt-2 max-w-md leading-relaxed">
+          {description}
+        </p>
       )}
-      {action && <div className="mt-5">{action}</div>}
+      {action && <div className="mt-6">{action}</div>}
     </div>
   );
 }
