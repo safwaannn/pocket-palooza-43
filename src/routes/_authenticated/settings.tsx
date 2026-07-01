@@ -71,6 +71,11 @@ function SettingsPage() {
   return (
     <AppShell title="Settings">
       <div className="mx-auto max-w-2xl space-y-6">
+        <div className="pb-2">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary mb-1">Account</p>
+          <h2 className="font-display text-3xl font-semibold tracking-tight text-gradient-brand">Settings</h2>
+          <p className="text-sm text-muted-foreground mt-1">Manage your profile and session.</p>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
