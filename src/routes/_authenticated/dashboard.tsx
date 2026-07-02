@@ -79,8 +79,13 @@ function Dashboard() {
       </div>
 
       {alerts.length > 0 && (
-        <Alert className="mb-6 border-warning/40 bg-warning/10">
-          <AlertTriangle className="h-4 w-4" />
+        <Alert
+          className="mb-6 border-warning/40 bg-warning/10"
+          role={alerts.some((b) => b.pct >= 100) ? "alert" : "status"}
+          aria-live={alerts.some((b) => b.pct >= 100) ? "assertive" : "polite"}
+          aria-atomic="true"
+        >
+          <AlertTriangle className="h-4 w-4" aria-hidden="true" />
           <AlertTitle>Budget alert</AlertTitle>
           <AlertDescription className="space-y-1">
             {alerts.map((budget) => (

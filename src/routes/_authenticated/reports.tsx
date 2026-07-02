@@ -88,25 +88,46 @@ function ReportsPage() {
     <AppShell title="Reports">
       <Card className="mb-6">
         <CardContent className="grid grid-cols-1 gap-4 p-4 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_auto] lg:items-end">
-          <div className="space-y-2">
-            <Label htmlFor="report-start">From</Label>
-            <Input
-              id="report-start"
-              type="date"
-              value={start}
-              onChange={(event) => setStart(event.target.value)}
-            />
+          <div
+            className="contents"
+            role="group"
+            aria-label="Report date range"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="report-start">From</Label>
+              <Input
+                id="report-start"
+                type="date"
+                value={start}
+                onChange={(event) => setStart(event.target.value)}
+                aria-describedby="report-start-help"
+                max={end || undefined}
+              />
+              <p id="report-start-help" className="sr-only">
+                Start of the reporting range.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="report-end">To</Label>
+              <Input
+                id="report-end"
+                type="date"
+                value={end}
+                onChange={(event) => setEnd(event.target.value)}
+                aria-describedby="report-end-help"
+                min={start || undefined}
+              />
+              <p id="report-end-help" className="sr-only">
+                End of the reporting range.
+              </p>
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="report-end">To</Label>
-            <Input
-              id="report-end"
-              type="date"
-              value={end}
-              onChange={(event) => setEnd(event.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-3 gap-4 rounded-lg border bg-muted/30 p-3">
+          <div
+            className="grid grid-cols-3 gap-4 rounded-lg border bg-muted/30 p-3"
+            role="status"
+            aria-live="polite"
+            aria-label="Totals for selected range"
+          >
             <MiniMetric label="Income" value={formatINR(totalIncome)} tone="success" />
             <MiniMetric label="Expense" value={formatINR(totalExpense)} tone="destructive" />
             <MiniMetric
