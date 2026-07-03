@@ -14,6 +14,7 @@ import {
 } from "@/lib/finance-queries";
 import { currentMonthYear, formatINR, monthRange, monthYearLabel } from "@/lib/format";
 import { AlertTriangle, ArrowRight, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { StatCardGridSkeleton, BudgetListSkeleton, ListSkeleton } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard - Paisa" }] }),
