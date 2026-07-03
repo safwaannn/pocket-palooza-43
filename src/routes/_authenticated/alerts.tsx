@@ -106,7 +106,10 @@ function AlertsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading…</p>
+        <div className="space-y-4">
+          <CardSkeleton lines={3} />
+          <CardSkeleton lines={3} />
+        </div>
       ) : alerts.length === 0 ? (
         <Card>
           <CardContent className="py-16 text-center">
