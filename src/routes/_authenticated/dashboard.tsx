@@ -28,8 +28,8 @@ function Dashboard() {
     start,
     end,
   });
-  const { data: recent = [] } = useTransactions({}, 8);
-  const { data: budgets = [] } = useBudgets(monthYear);
+  const { data: recent = [], isLoading: isRecentLoading } = useTransactions({}, 8);
+  const { data: budgets = [], isLoading: isBudgetsLoading } = useBudgets(monthYear);
   const { data: spent = {} } = useMonthlySpending(monthYear);
 
   const totals = useMemo(
