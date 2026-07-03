@@ -179,7 +179,9 @@ function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            {recent.length === 0 ? (
+            {isRecentLoading ? (
+              <ListSkeleton rows={5} />
+            ) : recent.length === 0 ? (
               <p className="text-sm text-muted-foreground">No transactions yet.</p>
             ) : (
               <div className="divide-y">
