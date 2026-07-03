@@ -87,17 +87,24 @@ function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" value={profile?.email ?? ""} disabled />
+              {isLoading ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Input id="email" value={profile?.email ?? ""} disabled />
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                disabled={isLoading}
-              />
+              {isLoading ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                />
+              )}
             </div>
             <div className="flex justify-end">
               <Button
