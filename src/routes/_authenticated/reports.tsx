@@ -289,12 +289,16 @@ function MiniMetric({
   );
 }
 
-function SummaryCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
+function SummaryCard({ label, value, detail, loading }: { label: string; value: string; detail?: string; loading?: boolean }) {
   return (
     <Card>
       <CardContent className="p-5">
         <div className="text-xs uppercase text-muted-foreground">{label}</div>
-        <div className="mt-1 truncate text-2xl font-semibold">{value}</div>
+        {loading ? (
+          <Skeleton className="mt-2 h-7 w-24" />
+        ) : (
+          <div className="mt-1 truncate text-2xl font-semibold">{value}</div>
+        )}
         {detail && <div className="mt-1 text-sm text-muted-foreground">{detail}</div>}
       </CardContent>
     </Card>
