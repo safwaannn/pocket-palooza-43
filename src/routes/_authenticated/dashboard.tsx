@@ -129,7 +129,7 @@ function Dashboard() {
             {isBudgetsLoading ? (
               <BudgetListSkeleton rows={3} />
             ) : null}
-            {budgetRows.length === 0 ? (
+            {!isBudgetsLoading && budgetRows.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 No budgets set for this month. Add limits to unlock alerts.
               </p>
