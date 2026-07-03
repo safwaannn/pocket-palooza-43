@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { AlertTriangle, BellRing, Check, CheckCheck } from "lucide-react";
 import { monthYearLabel } from "@/lib/format";
+import { CardSkeleton } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/alerts")({
   head: () => ({ meta: [{ title: "Alerts — Paisa" }] }),
