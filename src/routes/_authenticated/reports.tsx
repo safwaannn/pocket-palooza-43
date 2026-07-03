@@ -140,7 +140,7 @@ function ReportsPage() {
       </Card>
 
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <SummaryCard label="Transactions" value={isLoading ? "Loading..." : String(txns.length)} />
+        <SummaryCard label="Transactions" value={isLoading ? "—" : String(txns.length)} loading={isLoading} />
         <SummaryCard
           label="Top expense"
           value={topExpense ? topExpense.name : "None"}
