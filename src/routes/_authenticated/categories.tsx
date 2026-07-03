@@ -197,7 +197,7 @@ function CategoriesPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading categories...</p>
+              <ListSkeleton rows={4} />
             ) : custom.length === 0 ? (
               <p className="text-sm text-muted-foreground">No custom categories yet.</p>
             ) : (
