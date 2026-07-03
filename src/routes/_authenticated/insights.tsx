@@ -3,6 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import { EmptyState } from "@/components/EmptyState";
+import { StatCardGridSkeleton, CardSkeleton } from "@/components/Skeletons";
 import { useTransactions } from "@/lib/finance-queries";
 import { formatINR } from "@/lib/format";
 import { Sparkles, TrendingUp, TrendingDown, Calendar } from "lucide-react";
@@ -19,7 +20,11 @@ function InsightsPage() {
   if (isLoading) {
     return (
       <AppShell title="Insights">
-        <p className="text-muted-foreground">Loading insights…</p>
+        <StatCardGridSkeleton count={4} />
+        <div className="grid gap-6 md:grid-cols-2">
+          <CardSkeleton lines={5} />
+          <CardSkeleton lines={5} />
+        </div>
       </AppShell>
     );
   }

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
 import { AppShell } from "@/components/AppShell";
+import { ListSkeleton } from "@/components/Skeletons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -241,7 +242,7 @@ function TransactionsPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading transactions...</p>
+            <ListSkeleton rows={6} />
           ) : txns.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               {hasActiveFilters

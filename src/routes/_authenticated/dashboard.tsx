@@ -14,6 +14,7 @@ import {
 } from "@/lib/finance-queries";
 import { currentMonthYear, formatINR, monthRange, monthYearLabel } from "@/lib/format";
 import { AlertTriangle, ArrowRight, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { StatCardGridSkeleton, BudgetListSkeleton, ListSkeleton } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard - Paisa" }] }),
@@ -27,8 +28,8 @@ function Dashboard() {
     start,
     end,
   });
-  const { data: recent = [] } = useTransactions({}, 8);
-  const { data: budgets = [] } = useBudgets(monthYear);
+  const { data: recent = [], isLoading: isRecentLoading } = useTransactions({}, 8);
+  const { data: budgets = [], isLoading: isBudgetsLoading } = useBudgets(monthYear);
   const { data: spent = {} } = useMonthlySpending(monthYear);
 
   const totals = useMemo(
@@ -99,26 +100,15 @@ function Dashboard() {
         </Alert>
       )}
 
-      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <StatCard
-          label="Income"
-          value={isMonthLoading ? "Loading..." : formatINR(totals.income)}
-          icon={TrendingUp}
-          tone="success"
-        />
-        <StatCard
-          label="Expenses"
-          value={isMonthLoading ? "Loading..." : formatINR(totals.expense)}
-          icon={TrendingDown}
-          tone="destructive"
-        />
-        <StatCard
-          label="Balance"
-          value={isMonthLoading ? "Loading..." : formatINR(balance)}
-          icon={Wallet}
-          tone={balance >= 0 ? "primary" : "destructive"}
-        />
-      </div>
+      {isMonthLoading ? (
+        <StatCardGridSkeleton count={3} />
+      ) : (
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <StatCard label="Income" value={formatINR(totals.income)} icon={TrendingUp} tone="success" />
+          <StatCard label="Expenses" value={formatINR(totals.expense)} icon={TrendingDown} tone="destructive" />
+          <StatCard label="Balance" value={formatINR(balance)} icon={Wallet} tone={balance >= 0 ? "primary" : "destructive"} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
         <Card>
@@ -136,7 +126,10 @@ function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {budgetRows.length === 0 ? (
+            {isBudgetsLoading ? (
+              <BudgetListSkeleton rows={3} />
+            ) : null}
+            {!isBudgetsLoading && budgetRows.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 No budgets set for this month. Add limits to unlock alerts.
               </p>
@@ -186,7 +179,9 @@ function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            {recent.length === 0 ? (
+            {isRecentLoading ? (
+              <ListSkeleton rows={5} />
+            ) : recent.length === 0 ? (
               <p className="text-sm text-muted-foreground">No transactions yet.</p>
             ) : (
               <div className="divide-y">

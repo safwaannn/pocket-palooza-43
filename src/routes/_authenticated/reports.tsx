@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -140,7 +141,7 @@ function ReportsPage() {
       </Card>
 
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <SummaryCard label="Transactions" value={isLoading ? "Loading..." : String(txns.length)} />
+        <SummaryCard label="Transactions" value={isLoading ? "—" : String(txns.length)} loading={isLoading} />
         <SummaryCard
           label="Top expense"
           value={topExpense ? topExpense.name : "None"}
@@ -289,12 +290,16 @@ function MiniMetric({
   );
 }
 
-function SummaryCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
+function SummaryCard({ label, value, detail, loading }: { label: string; value: string; detail?: string; loading?: boolean }) {
   return (
     <Card>
       <CardContent className="p-5">
         <div className="text-xs uppercase text-muted-foreground">{label}</div>
-        <div className="mt-1 truncate text-2xl font-semibold">{value}</div>
+        {loading ? (
+          <Skeleton className="mt-2 h-7 w-24" />
+        ) : (
+          <div className="mt-1 truncate text-2xl font-semibold">{value}</div>
+        )}
         {detail && <div className="mt-1 text-sm text-muted-foreground">{detail}</div>}
       </CardContent>
     </Card>
