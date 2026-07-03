@@ -246,7 +246,7 @@ function BudgetsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading budgets...</p>
+            <BudgetListSkeleton rows={4} />
           ) : budgetRows.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No budgets for this month. Add limits for your expense categories.
