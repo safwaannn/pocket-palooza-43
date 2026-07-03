@@ -241,7 +241,7 @@ function TransactionsPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading transactions...</p>
+            <ListSkeleton rows={6} />
           ) : txns.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               {hasActiveFilters
