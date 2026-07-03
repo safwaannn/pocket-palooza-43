@@ -100,26 +100,15 @@ function Dashboard() {
         </Alert>
       )}
 
-      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <StatCard
-          label="Income"
-          value={isMonthLoading ? "Loading..." : formatINR(totals.income)}
-          icon={TrendingUp}
-          tone="success"
-        />
-        <StatCard
-          label="Expenses"
-          value={isMonthLoading ? "Loading..." : formatINR(totals.expense)}
-          icon={TrendingDown}
-          tone="destructive"
-        />
-        <StatCard
-          label="Balance"
-          value={isMonthLoading ? "Loading..." : formatINR(balance)}
-          icon={Wallet}
-          tone={balance >= 0 ? "primary" : "destructive"}
-        />
-      </div>
+      {isMonthLoading ? (
+        <StatCardGridSkeleton count={3} />
+      ) : (
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <StatCard label="Income" value={formatINR(totals.income)} icon={TrendingUp} tone="success" />
+          <StatCard label="Expenses" value={formatINR(totals.expense)} icon={TrendingDown} tone="destructive" />
+          <StatCard label="Balance" value={formatINR(balance)} icon={Wallet} tone={balance >= 0 ? "primary" : "destructive"} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
         <Card>
