@@ -6,10 +6,12 @@ export function BrandMark({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   const text = size === "sm" ? "text-sm" : size === "lg" ? "text-2xl" : "text-lg";
   return (
     <div className="flex items-center gap-2">
-      <div className={`${dims} rounded-xl bg-primary flex items-center justify-center`}>
+      <div
+        className={`${dims} flex items-center justify-center rounded-lg bg-primary ring-1 ring-accent/30`}
+      >
         <Wallet className={`${icon} text-primary-foreground`} />
       </div>
-      <span className={`${text} font-semibold tracking-tight`}>Paisa</span>
+      <span className={`${text} font-display font-semibold tracking-normal`}>Paisa</span>
     </div>
   );
 }
