@@ -2,12 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 /**
- * EmptyState component displays a placeholder when no data is available.
- * Shows an icon, title, optional description, and optional action button.
- * @param icon - Lucide icon component to display
- * @param title - Main heading text
- * @param description - Optional descriptive text
- * @param action - Optional action element (e.g., button)
+ * Displays a placeholder when no data is available.
  */
 export function EmptyState({
   icon: Icon,
@@ -21,13 +16,13 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-16 px-6 rounded-2xl border border-dashed bg-card/40">
-      <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center mb-4">
+    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/70 px-6 py-16 text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-accent/20 text-primary">
         <Icon className="h-7 w-7 text-accent-foreground" />
       </div>
-      <h3 className="text-lg font-semibold">{title}</h3>
+      <h3 className="font-display text-xl font-semibold">{title}</h3>
       {description && (
-        <p className="text-sm text-muted-foreground mt-1 max-w-md">{description}</p>
+        <p className="mt-1 max-w-md text-sm leading-relaxed text-muted-foreground">{description}</p>
       )}
       {action && <div className="mt-5">{action}</div>}
     </div>
