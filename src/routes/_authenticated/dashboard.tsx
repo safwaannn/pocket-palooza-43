@@ -39,12 +39,19 @@ const CHART_COLORS = [
   "var(--chart-7)",
 ];
 
-const currencyTooltip = (value: unknown) => formatINR(Number(value));
+const currencyTooltip = (value: unknown, name: unknown) => [
+  formatINR(Number(value)),
+  String(name ?? ""),
+];
 const compactINR = (n: number) =>
   new Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 }).format(n || 0);
 const shortMonth = (ym: string) => {
   const [y, m] = ym.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("en-IN", { month: "short" });
+};
+const fullMonth = (ym: string) => {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 };
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -186,30 +193,49 @@ function Dashboard() {
             {isTrendLoading ? (
               <ChartSkeleton height={280} />
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={trendByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/60" />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    fontSize={12}
-                    tickFormatter={(v) => compactINR(Number(v))}
-                    width={60}
-                  />
-                  <Tooltip
-                    formatter={currencyTooltip}
-                    contentStyle={{
-                      background: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: 8,
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="income" name="Income" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
-                  <Bar dataKey="expense" name="Expenses" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <figure
+                role="img"
+                tabIndex={0}
+                aria-label={`Bar chart of income versus expenses over the last 6 months. ${trendByMonth
+                  .map(
+                    (r) =>
+                      `${fullMonth(r.month)}: income ${formatINR(r.income)}, expenses ${formatINR(r.expense)}`,
+                  )
+                  .join("; ")}.`}
+                className="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={trendByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/60" />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      fontSize={12}
+                      tickFormatter={(v) => compactINR(Number(v))}
+                      width={60}
+                    />
+                    <Tooltip
+                      formatter={currencyTooltip}
+                      labelFormatter={(label, payload) => {
+                        const key = payload?.[0]?.payload?.month;
+                        return key ? fullMonth(key) : String(label);
+                      }}
+                      contentStyle={{
+                        background: "hsl(var(--background))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: 8,
+                      }}
+                    />
+                    <Legend />
+                    <Bar dataKey="income" name="Income" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="expense" name="Expenses" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <figcaption className="sr-only">
+                  Monthly income and expense totals for the last six months.
+                </figcaption>
+              </figure>
             )}
           </CardContent>
         </Card>
@@ -227,29 +253,59 @@ function Dashboard() {
                 No expenses recorded this month.
               </p>
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
-                  <Tooltip formatter={currencyTooltip} />
-                  <Pie
-                    data={expenseByCategory}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={2}
+              (() => {
+                const total = expenseByCategory.reduce((s, e) => s + e.value, 0);
+                return (
+                  <figure
+                    role="img"
+                    tabIndex={0}
+                    aria-label={`Donut chart of expenses by category for ${monthYearLabel(monthYear)}. Total ${formatINR(total)}. ${expenseByCategory
+                      .map(
+                        (e) =>
+                          `${e.name}: ${formatINR(e.value)} (${Math.round((e.value / total) * 100)}%)`,
+                      )
+                      .join(", ")}.`}
+                    className="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    {expenseByCategory.map((_, i) => (
-                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    iconType="circle"
-                    wrapperStyle={{ fontSize: 12 }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+                    <ResponsiveContainer width="100%" height={280}>
+                      <PieChart>
+                        <Tooltip
+                          formatter={(value: unknown, name: unknown) => [
+                            `${formatINR(Number(value))} (${Math.round((Number(value) / total) * 100)}%)`,
+                            String(name ?? ""),
+                          ]}
+                          contentStyle={{
+                            background: "hsl(var(--background))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: 8,
+                          }}
+                        />
+                        <Pie
+                          data={expenseByCategory}
+                          dataKey="value"
+                          nameKey="name"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={2}
+                        >
+                          {expenseByCategory.map((_, i) => (
+                            <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Legend
+                          verticalAlign="bottom"
+                          height={36}
+                          iconType="circle"
+                          wrapperStyle={{ fontSize: 12 }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <figcaption className="sr-only">
+                      Share of monthly expenses grouped by category.
+                    </figcaption>
+                  </figure>
+                );
+              })()
             )}
           </CardContent>
         </Card>
