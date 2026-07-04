@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
 import { AppShell } from "@/components/AppShell";
+import { ListSkeleton } from "@/components/Skeletons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -121,7 +122,11 @@ function TransactionsPage() {
       </div>
 
       <Card className="mb-6">
-        <CardContent className="grid grid-cols-1 gap-3 p-4 md:grid-cols-6">
+        <CardContent
+          className="grid grid-cols-1 gap-3 p-4 md:grid-cols-6"
+          role="search"
+          aria-label="Filter transactions"
+        >
           <div className="space-y-2">
             <Label htmlFor="transaction-filter-type">Type</Label>
             <Select
@@ -131,7 +136,10 @@ function TransactionsPage() {
                 setCategoryId("all");
               }}
             >
-              <SelectTrigger id="transaction-filter-type">
+              <SelectTrigger
+                id="transaction-filter-type"
+                aria-describedby="transaction-filter-type-help"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -140,12 +148,18 @@ function TransactionsPage() {
                 <SelectItem value="expense">Expense</SelectItem>
               </SelectContent>
             </Select>
+            <p id="transaction-filter-type-help" className="sr-only">
+              Filter transactions by income or expense.
+            </p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="transaction-filter-category">Category</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger id="transaction-filter-category">
+              <SelectTrigger
+                id="transaction-filter-category"
+                aria-describedby="transaction-filter-category-help"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -157,6 +171,9 @@ function TransactionsPage() {
                 ))}
               </SelectContent>
             </Select>
+            <p id="transaction-filter-category-help" className="sr-only">
+              Narrow the list to a single category.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -166,7 +183,12 @@ function TransactionsPage() {
               type="date"
               value={start}
               onChange={(event) => setStart(event.target.value)}
+              max={end || undefined}
+              aria-describedby="transaction-filter-start-help"
             />
+            <p id="transaction-filter-start-help" className="sr-only">
+              Earliest transaction date to include.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -176,7 +198,12 @@ function TransactionsPage() {
               type="date"
               value={end}
               onChange={(event) => setEnd(event.target.value)}
+              min={start || undefined}
+              aria-describedby="transaction-filter-end-help"
             />
+            <p id="transaction-filter-end-help" className="sr-only">
+              Latest transaction date to include.
+            </p>
           </div>
 
           <div className="space-y-2 md:col-span-2">
@@ -184,9 +211,11 @@ function TransactionsPage() {
             <div className="flex gap-2">
               <Input
                 id="transaction-filter-search"
+                type="search"
                 placeholder="Note, category, or type"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
+                aria-describedby="transaction-filter-search-help"
               />
               <Button
                 type="button"
@@ -194,11 +223,15 @@ function TransactionsPage() {
                 size="icon"
                 onClick={clearFilters}
                 disabled={!hasActiveFilters}
+                aria-label="Clear all filters"
               >
-                <FilterX className="h-4 w-4" />
+                <FilterX className="h-4 w-4" aria-hidden="true" />
                 <span className="sr-only">Clear filters</span>
               </Button>
             </div>
+            <p id="transaction-filter-search-help" className="sr-only">
+              Matches transaction notes, categories, and types.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -209,7 +242,7 @@ function TransactionsPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading transactions...</p>
+            <ListSkeleton rows={6} />
           ) : txns.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               {hasActiveFilters

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { LogOut, User } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Paisa" }] }),
@@ -71,6 +72,11 @@ function SettingsPage() {
   return (
     <AppShell title="Settings">
       <div className="mx-auto max-w-2xl space-y-6">
+        <div className="pb-2">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary mb-1">Account</p>
+          <h2 className="font-display text-3xl font-semibold tracking-tight text-gradient-brand">Settings</h2>
+          <p className="text-sm text-muted-foreground mt-1">Manage your profile and session.</p>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -81,17 +87,24 @@ function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" value={profile?.email ?? ""} disabled />
+              {isLoading ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Input id="email" value={profile?.email ?? ""} disabled />
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                disabled={isLoading}
-              />
+              {isLoading ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                />
+              )}
             </div>
             <div className="flex justify-end">
               <Button

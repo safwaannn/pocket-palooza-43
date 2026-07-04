@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Bell, AlertTriangle, CalendarRange, Mail, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({ meta: [{ title: "Notifications — Paisa" }] }),
@@ -46,33 +47,45 @@ function NotificationsPage() {
     toast.success("Preferences saved");
   };
 
-  const rows: { key: keyof Prefs; label: string; desc: string }[] = [
-    { key: "budgetWarn80", label: "Budget warning at 80%", desc: "Toast when a category nears its limit." },
-    { key: "budgetOver100", label: "Budget over 100%", desc: "Toast when a category exceeds its limit." },
-    { key: "monthlySummary", label: "Monthly summary", desc: "Recap of income, expenses, and savings." },
-    { key: "weeklyDigest", label: "Weekly digest", desc: "Short weekly snapshot every Monday." },
-    { key: "productUpdates", label: "Product updates", desc: "Occasional notes about new features." },
+  const rows: { key: keyof Prefs; label: string; desc: string; icon: typeof Bell }[] = [
+    { key: "budgetWarn80", label: "Budget warning at 80%", desc: "Toast when a category nears its limit.", icon: Bell },
+    { key: "budgetOver100", label: "Budget over 100%", desc: "Toast when a category exceeds its limit.", icon: AlertTriangle },
+    { key: "monthlySummary", label: "Monthly summary", desc: "Recap of income, expenses, and savings.", icon: CalendarRange },
+    { key: "weeklyDigest", label: "Weekly digest", desc: "Short weekly snapshot every Monday.", icon: Mail },
+    { key: "productUpdates", label: "Product updates", desc: "Occasional notes about new features.", icon: Sparkles },
   ];
 
   return (
     <AppShell title="Notifications">
-      <PageHeader title="Notification preferences" description="Pick what you want to be reminded about." />
-      <Card>
+      <PageHeader
+        eyebrow="Preferences"
+        title="Notification preferences"
+        description="Pick what you want to be reminded about."
+      />
+      <Card className="max-w-3xl">
         <CardHeader>
-          <CardTitle>Alerts</CardTitle>
+          <CardTitle className="font-display">Alerts</CardTitle>
           <CardDescription>Stored locally for now — server-side delivery is rolling out.</CardDescription>
         </CardHeader>
         <CardContent>
           <ul className="divide-y">
-            {rows.map((r) => (
-              <li key={r.key} className="py-4 flex items-center justify-between gap-4">
-                <div>
-                  <Label className="font-medium">{r.label}</Label>
-                  <p className="text-sm text-muted-foreground">{r.desc}</p>
-                </div>
-                <Switch checked={prefs[r.key]} onCheckedChange={(v) => update(r.key, v)} />
-              </li>
-            ))}
+            {rows.map((r) => {
+              const Icon = r.icon;
+              return (
+                <li key={r.key} className="py-4 flex items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="h-9 w-9 shrink-0 rounded-lg bg-accent flex items-center justify-center">
+                      <Icon className="h-4 w-4 text-accent-foreground" />
+                    </div>
+                    <div>
+                      <Label className="font-medium">{r.label}</Label>
+                      <p className="text-sm text-muted-foreground">{r.desc}</p>
+                    </div>
+                  </div>
+                  <Switch checked={prefs[r.key]} onCheckedChange={(v) => update(r.key, v)} />
+                </li>
+              );
+            })}
           </ul>
         </CardContent>
       </Card>

@@ -133,7 +133,7 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
             Record income and expenses with a category, date, and optional note.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={submit} className="space-y-4" aria-label="Transaction details">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="transaction-type">Type</Label>
@@ -144,7 +144,7 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
                   setCategoryId("");
                 }}
               >
-                <SelectTrigger id="transaction-type">
+                <SelectTrigger id="transaction-type" aria-describedby="transaction-type-help">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -152,6 +152,9 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
                   <SelectItem value="income">Income</SelectItem>
                 </SelectContent>
               </Select>
+              <p id="transaction-type-help" className="text-xs text-muted-foreground">
+                Choose whether this is money in or money out.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="transaction-amount">Amount (INR)</Label>
@@ -162,14 +165,25 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
                 step="0.01"
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
+                required
+                aria-required="true"
+                aria-describedby="transaction-amount-help"
+                inputMode="decimal"
               />
+              <p id="transaction-amount-help" className="text-xs text-muted-foreground">
+                Enter a positive amount in Indian rupees.
+              </p>
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="transaction-category">Category</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger id="transaction-category">
+              <SelectTrigger
+                id="transaction-category"
+                aria-required="true"
+                aria-describedby="transaction-category-help"
+              >
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
@@ -186,6 +200,9 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
                 )}
               </SelectContent>
             </Select>
+            <p id="transaction-category-help" className="text-xs text-muted-foreground">
+              Only {type} categories are shown.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -195,7 +212,13 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
               type="date"
               value={date}
               onChange={(event) => setDate(event.target.value)}
+              required
+              aria-required="true"
+              aria-describedby="transaction-date-help"
             />
+            <p id="transaction-date-help" className="text-xs text-muted-foreground">
+              Date the transaction happened.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -207,7 +230,11 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
               onChange={(event) => setNote(event.target.value)}
               maxLength={255}
               placeholder="Optional"
+              aria-describedby="transaction-note-help"
             />
+            <p id="transaction-note-help" className="text-xs text-muted-foreground">
+              Optional — up to 255 characters.
+            </p>
           </div>
 
           <Button type="submit" className="w-full" disabled={mutation.isPending}>

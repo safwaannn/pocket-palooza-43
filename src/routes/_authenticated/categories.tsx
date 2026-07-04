@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ListSkeleton } from "@/components/Skeletons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -145,6 +146,7 @@ function CategoriesPage() {
         <CardContent>
           <form
             className="flex flex-col gap-3 md:flex-row"
+            aria-label="Add custom category"
             onSubmit={(event) => {
               event.preventDefault();
               if (!name.trim()) return toast.error("Enter a name");
@@ -159,12 +161,18 @@ function CategoriesPage() {
                 onChange={(event) => setName(event.target.value)}
                 maxLength={50}
                 placeholder="Groceries, Rent, Bonus"
+                required
+                aria-required="true"
+                aria-describedby="category-name-help"
               />
+              <p id="category-name-help" className="text-xs text-muted-foreground">
+                Up to 50 characters. Must be unique within its type.
+              </p>
             </div>
             <div className="space-y-2 md:w-44">
               <Label htmlFor="category-type">Type</Label>
               <Select value={type} onValueChange={(value) => setType(value as TransactionType)}>
-                <SelectTrigger id="category-type">
+                <SelectTrigger id="category-type" aria-describedby="category-type-help">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -172,9 +180,12 @@ function CategoriesPage() {
                   <SelectItem value="income">Income</SelectItem>
                 </SelectContent>
               </Select>
+              <p id="category-type-help" className="text-xs text-muted-foreground">
+                Determines which transaction form shows this category.
+              </p>
             </div>
             <Button type="submit" className="md:self-end" disabled={add.isPending}>
-              <Plus className="h-4 w-4" /> Add
+              <Plus className="h-4 w-4" aria-hidden="true" /> Add
             </Button>
           </form>
         </CardContent>
@@ -187,7 +198,7 @@ function CategoriesPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading categories...</p>
+              <ListSkeleton rows={4} />
             ) : custom.length === 0 ? (
               <p className="text-sm text-muted-foreground">No custom categories yet.</p>
             ) : (

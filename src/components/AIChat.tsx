@@ -3,7 +3,6 @@ import { MessageSquare, Send, X, Bot, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { getAIResponse } from "@/lib/ai-assistant";
 
@@ -79,7 +78,7 @@ export function AIChat() {
           </CardHeader>
 
           <CardContent className="flex-1 overflow-hidden p-0">
-            <ScrollArea className="h-full p-4" viewportRef={scrollRef}>
+            <div ref={scrollRef} className="h-full overflow-y-auto p-4">
               <div className="space-y-4">
                 {messages.map((m, i) => (
                   <div
@@ -126,7 +125,7 @@ export function AIChat() {
                   </div>
                 )}
               </div>
-            </ScrollArea>
+            </div>
           </CardContent>
 
           <CardFooter className="p-4 pt-0">

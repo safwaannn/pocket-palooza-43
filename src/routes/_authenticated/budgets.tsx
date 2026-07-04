@@ -16,6 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BudgetListSkeleton } from "@/components/Skeletons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -139,14 +140,23 @@ function BudgetsPage() {
               setCategoryId("");
             }}
             className="w-56"
+            aria-describedby="budget-month-help"
           />
+          <p id="budget-month-help" className="sr-only">
+            Choose which month's budgets to view or edit.
+          </p>
         </div>
         <div className="text-sm text-muted-foreground">{monthYearLabel(monthYear)}</div>
       </div>
 
       {alerts.length > 0 && (
-        <Alert className="mb-6 border-warning/40 bg-warning/10">
-          <AlertTriangle className="h-4 w-4" />
+        <Alert
+          className="mb-6 border-warning/40 bg-warning/10"
+          role={alerts.some((b) => b.pct >= 100) ? "alert" : "status"}
+          aria-live={alerts.some((b) => b.pct >= 100) ? "assertive" : "polite"}
+          aria-atomic="true"
+        >
+          <AlertTriangle className="h-4 w-4" aria-hidden="true" />
           <AlertTitle>Budget attention needed</AlertTitle>
           <AlertDescription className="space-y-1">
             {alerts.map((budget) => (
@@ -176,6 +186,7 @@ function BudgetsPage() {
         <CardContent>
           <form
             className="flex flex-col gap-3 md:flex-row"
+            aria-label="Set monthly budget limit"
             onSubmit={(event) => {
               event.preventDefault();
               if (!categoryId) return toast.error("Pick a category");
@@ -186,7 +197,11 @@ function BudgetsPage() {
             <div className="flex-1 space-y-2">
               <Label htmlFor="budget-category">Category</Label>
               <Select value={categoryId} onValueChange={setCategoryId}>
-                <SelectTrigger id="budget-category">
+                <SelectTrigger
+                  id="budget-category"
+                  aria-required="true"
+                  aria-describedby="budget-category-help"
+                >
                   <SelectValue placeholder="Select expense category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -197,6 +212,9 @@ function BudgetsPage() {
                   ))}
                 </SelectContent>
               </Select>
+              <p id="budget-category-help" className="text-xs text-muted-foreground">
+                Only expense categories can have budgets.
+              </p>
             </div>
             <div className="space-y-2 md:w-52">
               <Label htmlFor="budget-limit">Monthly limit (INR)</Label>
@@ -207,7 +225,14 @@ function BudgetsPage() {
                 step="1"
                 value={limit}
                 onChange={(event) => setLimit(event.target.value)}
+                required
+                aria-required="true"
+                aria-describedby="budget-limit-help"
+                inputMode="numeric"
               />
+              <p id="budget-limit-help" className="text-xs text-muted-foreground">
+                Alerts fire at 80% and 100% of this limit.
+              </p>
             </div>
             <Button type="submit" className="md:self-end" disabled={upsert.isPending}>
               {upsert.isPending ? "Saving..." : existingBudget ? "Update budget" : "Save budget"}
@@ -222,7 +247,7 @@ function BudgetsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading budgets...</p>
+            <BudgetListSkeleton rows={4} />
           ) : budgetRows.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No budgets for this month. Add limits for your expense categories.

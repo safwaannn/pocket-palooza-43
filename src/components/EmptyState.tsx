@@ -1,9 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-/**
- * Displays a placeholder when no data is available.
- */
 export function EmptyState({
   icon: Icon,
   title,
@@ -16,15 +13,18 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/70 px-6 py-16 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-accent/20 text-primary">
-        <Icon className="h-7 w-7 text-accent-foreground" />
+    <div className="relative flex flex-col items-center justify-center text-center py-20 px-6 rounded-3xl border border-dashed border-primary/20 bg-gradient-to-br from-accent/30 via-card to-card overflow-hidden">
+      <div className="absolute inset-0 -z-10 opacity-40 [background:radial-gradient(circle_at_top,color-mix(in_oklab,var(--primary)_18%,transparent),transparent_60%)]" />
+      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center mb-5 shadow-glow">
+        <Icon className="h-8 w-8 text-primary-foreground" />
       </div>
       <h3 className="font-display text-xl font-semibold">{title}</h3>
       {description && (
-        <p className="mt-1 max-w-md text-sm leading-relaxed text-muted-foreground">{description}</p>
+        <p className="text-sm text-muted-foreground mt-2 max-w-md leading-relaxed">
+          {description}
+        </p>
       )}
-      {action && <div className="mt-5">{action}</div>}
+      {action && <div className="mt-6">{action}</div>}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import { EmptyState } from "@/components/EmptyState";
+import { StatCardGridSkeleton, CardSkeleton } from "@/components/Skeletons";
 import { useTransactions } from "@/lib/finance-queries";
 import { formatINR } from "@/lib/format";
 import { Sparkles, TrendingUp, TrendingDown, Calendar } from "lucide-react";
@@ -19,7 +20,11 @@ function InsightsPage() {
   if (isLoading) {
     return (
       <AppShell title="Insights">
-        <p className="text-muted-foreground">Loading insights…</p>
+        <StatCardGridSkeleton count={4} />
+        <div className="grid gap-6 md:grid-cols-2">
+          <CardSkeleton lines={5} />
+          <CardSkeleton lines={5} />
+        </div>
       </AppShell>
     );
   }
@@ -100,18 +105,32 @@ function InsightsPage() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Top categories</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="font-display">Top categories</CardTitle></CardHeader>
         <CardContent>
-          <ul className="divide-y">
-            {topCats.map((c) => (
-              <li key={c.name} className="py-3 flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{c.name}</p>
-                  <p className="text-xs text-muted-foreground">{c.count} transactions</p>
-                </div>
-                <p className="font-semibold">{formatINR(c.total)}</p>
-              </li>
-            ))}
+          <ul className="space-y-4">
+            {topCats.map((c, i) => {
+              const pct = topCats[0] ? (c.total / topCats[0].total) * 100 : 0;
+              return (
+                <li key={c.name} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="h-6 w-6 rounded-md bg-accent text-accent-foreground text-xs font-semibold flex items-center justify-center">
+                        {i + 1}
+                      </span>
+                      <span className="font-medium">{c.name}</span>
+                      <span className="text-xs text-muted-foreground">· {c.count} txns</span>
+                    </div>
+                    <span className="font-semibold">{formatINR(c.total)}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-primary to-primary-glow"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </CardContent>
       </Card>
