@@ -176,6 +176,85 @@ function Dashboard() {
         </div>
       )}
 
+      <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,1fr)]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Income vs Expenses</CardTitle>
+            <CardDescription>Last 6 months of activity.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isTrendLoading ? (
+              <ChartSkeleton height={280} />
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={trendByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/60" />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    fontSize={12}
+                    tickFormatter={(v) => compactINR(Number(v))}
+                    width={60}
+                  />
+                  <Tooltip
+                    formatter={currencyTooltip}
+                    contentStyle={{
+                      background: "hsl(var(--background))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 8,
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="income" name="Income" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="expense" name="Expenses" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Expenses by category</CardTitle>
+            <CardDescription>Breakdown for {monthYearLabel(monthYear)}.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isMonthLoading ? (
+              <ChartSkeleton height={280} />
+            ) : expenseByCategory.length === 0 ? (
+              <p className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
+                No expenses recorded this month.
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Tooltip formatter={currencyTooltip} />
+                  <Pie
+                    data={expenseByCategory}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={2}
+                  >
+                    {expenseByCategory.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: 12 }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
         <Card>
           <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
