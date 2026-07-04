@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, type ComponentType } from "react";
 import { AppShell } from "@/components/AppShell";
+import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,15 +69,11 @@ function Dashboard() {
 
   return (
     <AppShell title="Dashboard">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-sm text-muted-foreground">{monthYearLabel(monthYear)}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Income, expenses, budgets, and recent activity for the current month.
-          </p>
-        </div>
-        <QuickAddButton />
-      </div>
+      <PageHeader
+        title={monthYearLabel(monthYear)}
+        description="Income, expenses, budgets, and recent activity for the current month."
+        actions={<QuickAddButton />}
+      />
 
       {alerts.length > 0 && (
         <Alert className="mb-6 border-warning/40 bg-warning/10">
@@ -94,7 +91,7 @@ function Dashboard() {
         </Alert>
       )}
 
-      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
         <StatCard
           label="Income"
           value={isMonthLoading ? "Loading..." : formatINR(totals.income)}
@@ -184,7 +181,7 @@ function Dashboard() {
             {recent.length === 0 ? (
               <p className="text-sm text-muted-foreground">No transactions yet.</p>
             ) : (
-              <div className="divide-y">
+              <div className="divide-y divide-border">
                 {recent.map((transaction) => (
                   <RecentTransaction key={transaction.id} transaction={transaction} />
                 ))}
@@ -205,7 +202,7 @@ function StatCard({
 }: {
   label: string;
   value: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   tone: "success" | "destructive" | "primary";
 }) {
   const toneCls =
@@ -213,17 +210,19 @@ function StatCard({
       ? "bg-success/10 text-success"
       : tone === "destructive"
         ? "bg-destructive/10 text-destructive"
-        : "bg-primary/10 text-primary";
+        : "bg-accent/20 text-primary";
 
   return (
     <Card>
-      <CardContent className="flex items-center gap-4 p-5">
-        <div className={`flex h-11 w-11 items-center justify-center rounded-lg ${toneCls}`}>
-          <Icon className="h-5 w-5" />
+      <CardContent className="p-5">
+        <div className="mb-5 flex items-center justify-between">
+          <p className="eyebrow">{label}</p>
+          <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${toneCls}`}>
+            <Icon className="h-5 w-5" />
+          </div>
         </div>
         <div className="min-w-0">
-          <div className="text-xs uppercase text-muted-foreground">{label}</div>
-          <div className="mt-0.5 truncate text-2xl font-semibold">{value}</div>
+          <div className="finance-figure truncate text-4xl font-semibold leading-none">{value}</div>
         </div>
       </CardContent>
     </Card>
@@ -236,7 +235,7 @@ function RecentTransaction({ transaction }: { transaction: Transaction }) {
   return (
     <div className="flex items-center justify-between gap-3 py-3">
       <div className="min-w-0">
-        <div className="truncate text-sm font-medium">
+        <div className="truncate text-sm font-semibold">
           {transaction.category?.name ?? "Uncategorized"}
         </div>
         <div className="truncate text-xs text-muted-foreground">
@@ -244,7 +243,7 @@ function RecentTransaction({ transaction }: { transaction: Transaction }) {
         </div>
       </div>
       <div
-        className={`whitespace-nowrap text-sm font-semibold ${
+        className={`finance-figure whitespace-nowrap text-base font-semibold ${
           isIncome ? "text-success" : "text-destructive"
         }`}
       >
