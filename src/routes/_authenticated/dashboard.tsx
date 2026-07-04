@@ -253,29 +253,59 @@ function Dashboard() {
                 No expenses recorded this month.
               </p>
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
-                  <Tooltip formatter={currencyTooltip} />
-                  <Pie
-                    data={expenseByCategory}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={2}
+              (() => {
+                const total = expenseByCategory.reduce((s, e) => s + e.value, 0);
+                return (
+                  <figure
+                    role="img"
+                    tabIndex={0}
+                    aria-label={`Donut chart of expenses by category for ${monthYearLabel(monthYear)}. Total ${formatINR(total)}. ${expenseByCategory
+                      .map(
+                        (e) =>
+                          `${e.name}: ${formatINR(e.value)} (${Math.round((e.value / total) * 100)}%)`,
+                      )
+                      .join(", ")}.`}
+                    className="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    {expenseByCategory.map((_, i) => (
-                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    iconType="circle"
-                    wrapperStyle={{ fontSize: 12 }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+                    <ResponsiveContainer width="100%" height={280}>
+                      <PieChart>
+                        <Tooltip
+                          formatter={(value: unknown, name: unknown) => [
+                            `${formatINR(Number(value))} (${Math.round((Number(value) / total) * 100)}%)`,
+                            String(name ?? ""),
+                          ]}
+                          contentStyle={{
+                            background: "hsl(var(--background))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: 8,
+                          }}
+                        />
+                        <Pie
+                          data={expenseByCategory}
+                          dataKey="value"
+                          nameKey="name"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={2}
+                        >
+                          {expenseByCategory.map((_, i) => (
+                            <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Legend
+                          verticalAlign="bottom"
+                          height={36}
+                          iconType="circle"
+                          wrapperStyle={{ fontSize: 12 }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <figcaption className="sr-only">
+                      Share of monthly expenses grouped by category.
+                    </figcaption>
+                  </figure>
+                );
+              })()
             )}
           </CardContent>
         </Card>
