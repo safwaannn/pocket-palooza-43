@@ -12,9 +12,40 @@ import {
   useTransactions,
   type Transaction,
 } from "@/lib/finance-queries";
-import { currentMonthYear, formatINR, monthRange, monthYearLabel } from "@/lib/format";
+import { currentMonthYear, formatINR, monthRange, monthYearLabel, monthsAgo } from "@/lib/format";
 import { AlertTriangle, ArrowRight, TrendingDown, TrendingUp, Wallet } from "lucide-react";
-import { StatCardGridSkeleton, BudgetListSkeleton, ListSkeleton } from "@/components/Skeletons";
+import { StatCardGridSkeleton, BudgetListSkeleton, ListSkeleton, ChartSkeleton } from "@/components/Skeletons";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+const CHART_COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--chart-6)",
+  "var(--chart-7)",
+];
+
+const currencyTooltip = (value: unknown) => formatINR(Number(value));
+const compactINR = (n: number) =>
+  new Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 }).format(n || 0);
+const shortMonth = (ym: string) => {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("en-IN", { month: "short" });
+};
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard - Paisa" }] }),
@@ -31,6 +62,41 @@ function Dashboard() {
   const { data: recent = [], isLoading: isRecentLoading } = useTransactions({}, 8);
   const { data: budgets = [], isLoading: isBudgetsLoading } = useBudgets(monthYear);
   const { data: spent = {} } = useMonthlySpending(monthYear);
+  const { data: trendTxns = [], isLoading: isTrendLoading } = useTransactions({
+    start: monthsAgo(5),
+    end,
+  });
+
+  const trendByMonth = useMemo(() => {
+    const map = new Map<string, { month: string; income: number; expense: number }>();
+    // Seed last 6 months so gaps still render
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      map.set(key, { month: key, income: 0, expense: 0 });
+    }
+    trendTxns.forEach((t) => {
+      const key = t.date.slice(0, 7);
+      const row = map.get(key);
+      if (row) row[t.type] += t.amount;
+    });
+    return Array.from(map.values()).map((r) => ({ ...r, label: shortMonth(r.month) }));
+  }, [trendTxns]);
+
+  const expenseByCategory = useMemo(() => {
+    const map = new Map<string, number>();
+    monthTransactions
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        const key = t.category?.name ?? "Uncategorized";
+        map.set(key, (map.get(key) ?? 0) + t.amount);
+      });
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 7);
+  }, [monthTransactions]);
 
   const totals = useMemo(
     () =>
@@ -109,6 +175,85 @@ function Dashboard() {
           <StatCard label="Balance" value={formatINR(balance)} icon={Wallet} tone={balance >= 0 ? "primary" : "destructive"} />
         </div>
       )}
+
+      <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,1fr)]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Income vs Expenses</CardTitle>
+            <CardDescription>Last 6 months of activity.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isTrendLoading ? (
+              <ChartSkeleton height={280} />
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={trendByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/60" />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    fontSize={12}
+                    tickFormatter={(v) => compactINR(Number(v))}
+                    width={60}
+                  />
+                  <Tooltip
+                    formatter={currencyTooltip}
+                    contentStyle={{
+                      background: "hsl(var(--background))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 8,
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="income" name="Income" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="expense" name="Expenses" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Expenses by category</CardTitle>
+            <CardDescription>Breakdown for {monthYearLabel(monthYear)}.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isMonthLoading ? (
+              <ChartSkeleton height={280} />
+            ) : expenseByCategory.length === 0 ? (
+              <p className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
+                No expenses recorded this month.
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Tooltip formatter={currencyTooltip} />
+                  <Pie
+                    data={expenseByCategory}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={2}
+                  >
+                    {expenseByCategory.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: 12 }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
         <Card>
