@@ -217,7 +217,7 @@ function TransactionsPage() {
                 : "No transactions yet. Add your first income or expense."}
             </p>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-border">
               {txns.map((transaction) => (
                 <TransactionRow
                   key={transaction.id}
@@ -261,8 +261,8 @@ function SummaryCard({
   return (
     <Card>
       <CardContent className="p-5">
-        <div className="text-xs uppercase text-muted-foreground">{label}</div>
-        <div className={`mt-1 text-2xl font-semibold ${valueClass}`}>{value}</div>
+        <div className="eyebrow">{label}</div>
+        <div className={`finance-figure mt-2 text-3xl font-semibold ${valueClass}`}>{value}</div>
       </CardContent>
     </Card>
   );
@@ -283,11 +283,11 @@ function TransactionRow({
     <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="truncate font-medium">
+          <span className="truncate font-semibold">
             {transaction.category?.name ?? "Uncategorized"}
           </span>
           <span
-            className={`rounded-full px-2 py-0.5 text-xs ${
+            className={`rounded-full border px-2 py-0.5 text-xs font-medium ${
               isIncome ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
             }`}
           >
@@ -302,7 +302,7 @@ function TransactionRow({
 
       <div className="flex items-center justify-between gap-3 sm:justify-end">
         <div
-          className={`whitespace-nowrap text-sm font-semibold ${
+          className={`finance-figure whitespace-nowrap text-base font-semibold ${
             isIncome ? "text-success" : "text-destructive"
           }`}
         >
