@@ -39,12 +39,19 @@ const CHART_COLORS = [
   "var(--chart-7)",
 ];
 
-const currencyTooltip = (value: unknown) => formatINR(Number(value));
+const currencyTooltip = (value: unknown, name: unknown) => [
+  formatINR(Number(value)),
+  String(name ?? ""),
+];
 const compactINR = (n: number) =>
   new Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 }).format(n || 0);
 const shortMonth = (ym: string) => {
   const [y, m] = ym.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("en-IN", { month: "short" });
+};
+const fullMonth = (ym: string) => {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 };
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
