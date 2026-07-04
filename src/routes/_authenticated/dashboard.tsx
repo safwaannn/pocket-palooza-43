@@ -193,30 +193,49 @@ function Dashboard() {
             {isTrendLoading ? (
               <ChartSkeleton height={280} />
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={trendByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/60" />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    fontSize={12}
-                    tickFormatter={(v) => compactINR(Number(v))}
-                    width={60}
-                  />
-                  <Tooltip
-                    formatter={currencyTooltip}
-                    contentStyle={{
-                      background: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: 8,
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="income" name="Income" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
-                  <Bar dataKey="expense" name="Expenses" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <figure
+                role="img"
+                tabIndex={0}
+                aria-label={`Bar chart of income versus expenses over the last 6 months. ${trendByMonth
+                  .map(
+                    (r) =>
+                      `${fullMonth(r.month)}: income ${formatINR(r.income)}, expenses ${formatINR(r.expense)}`,
+                  )
+                  .join("; ")}.`}
+                className="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={trendByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/60" />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      fontSize={12}
+                      tickFormatter={(v) => compactINR(Number(v))}
+                      width={60}
+                    />
+                    <Tooltip
+                      formatter={currencyTooltip}
+                      labelFormatter={(label, payload) => {
+                        const key = payload?.[0]?.payload?.month;
+                        return key ? fullMonth(key) : String(label);
+                      }}
+                      contentStyle={{
+                        background: "hsl(var(--background))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: 8,
+                      }}
+                    />
+                    <Legend />
+                    <Bar dataKey="income" name="Income" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="expense" name="Expenses" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <figcaption className="sr-only">
+                  Monthly income and expense totals for the last six months.
+                </figcaption>
+              </figure>
             )}
           </CardContent>
         </Card>
