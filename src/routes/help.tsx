@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BrandMark } from "@/components/BrandMark";
-import { Footer } from "@/components/Footer";
 import {
   Accordion,
   AccordionContent,
@@ -11,7 +10,7 @@ import {
 export const Route = createFileRoute("/help")({
   head: () => ({
     meta: [
-      { title: "Help — Paisa" },
+      { title: "Help - Paisa" },
       { name: "description", content: "Answers to common questions about using Paisa." },
     ],
   }),
@@ -43,25 +42,33 @@ const faqs = [
 
 function HelpPage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b">
-        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center">
-          <Link to="/"><BrandMark /></Link>
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="border-b border-border/80 bg-background/90">
+        <div className="mx-auto flex h-16 max-w-6xl items-center px-6">
+          <Link to="/">
+            <BrandMark />
+          </Link>
         </div>
       </header>
-      <main className="flex-1 mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-4xl font-semibold tracking-tight mb-2">Help & FAQ</h1>
-        <p className="text-muted-foreground mb-8">Common questions about Paisa.</p>
-        <Accordion type="single" collapsible className="w-full">
-          {faqs.map((f, i) => (
-            <AccordionItem value={`item-${i}`} key={i}>
-              <AccordionTrigger className="text-left">{f.q}</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
+      <main className="mx-auto max-w-3xl flex-1 px-6 py-16">
+        <p className="eyebrow">Support</p>
+        <h1 className="mb-2 mt-3 font-display text-5xl font-semibold tracking-normal">
+          Help & FAQ
+        </h1>
+        <p className="mb-8 text-muted-foreground">Common questions about Paisa.</p>
+        <Accordion type="single" collapsible className="w-full border-y border-border">
+          {faqs.map((faq, index) => (
+            <AccordionItem value={`item-${index}`} key={faq.q}>
+              <AccordionTrigger className="text-left font-display text-lg">
+                {faq.q}
+              </AccordionTrigger>
+              <AccordionContent className="leading-6 text-muted-foreground">
+                {faq.a}
+              </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
       </main>
-      <Footer />
     </div>
   );
 }
