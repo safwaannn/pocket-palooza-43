@@ -126,7 +126,7 @@ function BudgetsPage() {
     <AppShell title="Budgets">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-2">
-          <Label htmlFor="budget-month" className="text-xs uppercase text-muted-foreground">
+          <Label htmlFor="budget-month" className="eyebrow">
             Month
           </Label>
           <Input
@@ -318,8 +318,8 @@ function SummaryCard({
   return (
     <Card>
       <CardContent className="p-5">
-        <div className="text-xs uppercase text-muted-foreground">{label}</div>
-        <div className={`mt-1 text-2xl font-semibold ${valueClass}`}>{value}</div>
+        <div className="eyebrow">{label}</div>
+        <div className={`finance-figure mt-2 text-3xl font-semibold ${valueClass}`}>{value}</div>
       </CardContent>
     </Card>
   );
