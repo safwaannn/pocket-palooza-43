@@ -106,7 +106,7 @@ function ReportsPage() {
               onChange={(event) => setEnd(event.target.value)}
             />
           </div>
-          <div className="grid grid-cols-3 gap-4 rounded-lg border bg-muted/30 p-3">
+          <div className="grid grid-cols-3 gap-4 rounded-lg border border-border bg-secondary/50 p-3">
             <MiniMetric label="Income" value={formatINR(totalIncome)} tone="success" />
             <MiniMetric label="Expense" value={formatINR(totalExpense)} tone="destructive" />
             <MiniMetric
@@ -163,7 +163,7 @@ function ReportsPage() {
             </div>
 
             {expenseByCat.length > 0 && (
-              <div className="mt-4 divide-y">
+              <div className="mt-4 divide-y divide-border">
                 {expenseByCat.slice(0, 6).map((row) => (
                   <div key={row.name} className="flex items-center justify-between py-2 text-sm">
                     <span className="truncate">{row.name}</span>
@@ -262,8 +262,8 @@ function MiniMetric({
 
   return (
     <div className="min-w-0">
-      <div className="text-xs uppercase text-muted-foreground">{label}</div>
-      <div className={`truncate text-lg font-semibold ${valueClass}`}>{value}</div>
+      <div className="eyebrow">{label}</div>
+      <div className={`finance-figure truncate text-xl font-semibold ${valueClass}`}>{value}</div>
     </div>
   );
 }
@@ -272,8 +272,8 @@ function SummaryCard({ label, value, detail }: { label: string; value: string; d
   return (
     <Card>
       <CardContent className="p-5">
-        <div className="text-xs uppercase text-muted-foreground">{label}</div>
-        <div className="mt-1 truncate text-2xl font-semibold">{value}</div>
+        <div className="eyebrow">{label}</div>
+        <div className="finance-figure mt-2 truncate text-3xl font-semibold">{value}</div>
         {detail && <div className="mt-1 text-sm text-muted-foreground">{detail}</div>}
       </CardContent>
     </Card>
