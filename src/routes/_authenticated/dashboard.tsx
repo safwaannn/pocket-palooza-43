@@ -12,9 +12,40 @@ import {
   useTransactions,
   type Transaction,
 } from "@/lib/finance-queries";
-import { currentMonthYear, formatINR, monthRange, monthYearLabel } from "@/lib/format";
+import { currentMonthYear, formatINR, monthRange, monthYearLabel, monthsAgo } from "@/lib/format";
 import { AlertTriangle, ArrowRight, TrendingDown, TrendingUp, Wallet } from "lucide-react";
-import { StatCardGridSkeleton, BudgetListSkeleton, ListSkeleton } from "@/components/Skeletons";
+import { StatCardGridSkeleton, BudgetListSkeleton, ListSkeleton, ChartSkeleton } from "@/components/Skeletons";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+const CHART_COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--chart-6)",
+  "var(--chart-7)",
+];
+
+const currencyTooltip = (value: unknown) => formatINR(Number(value));
+const compactINR = (n: number) =>
+  new Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 }).format(n || 0);
+const shortMonth = (ym: string) => {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("en-IN", { month: "short" });
+};
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard - Paisa" }] }),
