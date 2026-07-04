@@ -233,7 +233,7 @@ function GoalsPage() {
             return (
               <Card
                 key={g.id}
-                className="overflow-hidden transition-shadow hover:shadow-md"
+                className="overflow-hidden transition-colors hover:border-primary/35"
               >
                 <CardContent className="p-5 space-y-4">
                   <div className="flex items-start justify-between gap-3">
@@ -245,9 +245,7 @@ function GoalsPage() {
                             <CheckCircle2 className="h-3 w-3" /> Done
                           </Badge>
                         )}
-                        {isOverdue && (
-                          <Badge variant="destructive">Overdue</Badge>
-                        )}
+                        {isOverdue && <Badge variant="destructive">Overdue</Badge>}
                       </div>
                       {g.deadline && (
                         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
@@ -289,20 +287,20 @@ function GoalsPage() {
                     <div className="flex items-end justify-between gap-3">
                       <div>
                         <p className="text-xs text-muted-foreground">Saved</p>
-                        <p className="text-xl font-bold tracking-tight">{formatINR(g.saved)}</p>
+                        <p className="finance-figure text-2xl font-semibold">
+                          {formatINR(g.saved)}
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-muted-foreground">Target</p>
-                        <p className="text-lg font-semibold">{formatINR(g.target)}</p>
+                        <p className="finance-figure text-xl font-semibold">
+                          {formatINR(g.target)}
+                        </p>
                       </div>
                     </div>
 
                     <div className="relative">
-                      <Progress
-                        value={pct}
-                        className="h-3"
-                        aria-label={`${g.name} progress`}
-                      />
+                      <Progress value={pct} className="h-3" aria-label={`${g.name} progress`} />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className="text-[10px] font-semibold leading-none drop-shadow-sm">
                           {pct.toFixed(0)}%
@@ -428,10 +426,7 @@ function GoalsPage() {
       </Dialog>
 
       {/* Custom contribution dialog */}
-      <Dialog
-        open={contributeId !== null}
-        onOpenChange={(o) => !o && setContributeId(null)}
-      >
+      <Dialog open={contributeId !== null} onOpenChange={(o) => !o && setContributeId(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add contribution</DialogTitle>

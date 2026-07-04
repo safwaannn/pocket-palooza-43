@@ -191,7 +191,7 @@ function CategoriesPage() {
             ) : custom.length === 0 ? (
               <p className="text-sm text-muted-foreground">No custom categories yet.</p>
             ) : (
-              <div className="divide-y">
+              <div className="divide-y divide-border">
                 {custom.map((category) => (
                   <div key={category.id} className="flex items-center justify-between gap-3 py-3">
                     <CategoryLabel category={category} />
@@ -239,7 +239,7 @@ function CategoriesPage() {
             <CardTitle>Default categories</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="divide-y">
+            <div className="divide-y divide-border">
               {defaults.map((category) => (
                 <div key={category.id} className="flex items-center justify-between py-3">
                   <CategoryLabel category={category} />
@@ -272,8 +272,8 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <Card>
       <CardContent className="p-5">
-        <div className="text-xs uppercase text-muted-foreground">{label}</div>
-        <div className="mt-1 text-2xl font-semibold">{value}</div>
+        <div className="eyebrow">{label}</div>
+        <div className="finance-figure mt-2 text-3xl font-semibold">{value}</div>
       </CardContent>
     </Card>
   );
