@@ -62,6 +62,41 @@ function Dashboard() {
   const { data: recent = [], isLoading: isRecentLoading } = useTransactions({}, 8);
   const { data: budgets = [], isLoading: isBudgetsLoading } = useBudgets(monthYear);
   const { data: spent = {} } = useMonthlySpending(monthYear);
+  const { data: trendTxns = [], isLoading: isTrendLoading } = useTransactions({
+    start: monthsAgo(5),
+    end,
+  });
+
+  const trendByMonth = useMemo(() => {
+    const map = new Map<string, { month: string; income: number; expense: number }>();
+    // Seed last 6 months so gaps still render
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      map.set(key, { month: key, income: 0, expense: 0 });
+    }
+    trendTxns.forEach((t) => {
+      const key = t.date.slice(0, 7);
+      const row = map.get(key);
+      if (row) row[t.type] += t.amount;
+    });
+    return Array.from(map.values()).map((r) => ({ ...r, label: shortMonth(r.month) }));
+  }, [trendTxns]);
+
+  const expenseByCategory = useMemo(() => {
+    const map = new Map<string, number>();
+    monthTransactions
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        const key = t.category?.name ?? "Uncategorized";
+        map.set(key, (map.get(key) ?? 0) + t.amount);
+      });
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 7);
+  }, [monthTransactions]);
 
   const totals = useMemo(
     () =>
