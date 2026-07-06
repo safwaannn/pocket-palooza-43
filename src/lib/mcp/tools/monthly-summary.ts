@@ -49,11 +49,12 @@ export default defineTool({
     let income = 0;
     let expense = 0;
     const byCategory: Record<string, number> = {};
-    for (const row of (data ?? []) as Array<{
+    for (const row of (data ?? []) as unknown as Array<{
       amount: number | string;
       type: string;
       category: { name: string } | null;
     }>) {
+
       const amt = Number(row.amount);
       if (row.type === "income") income += amt;
       else {

@@ -57,7 +57,7 @@ export default defineTool({
     if (error) {
       return { content: [{ type: "text", text: error.message }], isError: true };
     }
-    let rows = (data ?? []) as Array<{
+    let rows = (data ?? []) as unknown as Array<{
       id: string;
       amount: number | string;
       type: string;
@@ -78,6 +78,7 @@ export default defineTool({
       note: r.note,
       category: r.category?.name ?? null,
     }));
+
     return {
       content: [{ type: "text", text: JSON.stringify(shaped, null, 2) }],
       structuredContent: { transactions: shaped, count: shaped.length },

@@ -62,13 +62,14 @@ export default defineTool({
       if (!t.category_id) continue;
       spent.set(t.category_id, (spent.get(t.category_id) ?? 0) + Number(t.amount));
     }
-    const rows = ((budgetsRes.data ?? []) as Array<{
+    const rows = ((budgetsRes.data ?? []) as unknown as Array<{
       id: string;
       category_id: string;
       limit_amount: number | string;
       month_year: string;
       category: { name: string } | null;
     }>).map((b) => {
+
       const limit = Number(b.limit_amount);
       const used = spent.get(b.category_id) ?? 0;
       return {
