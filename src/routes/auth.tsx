@@ -14,11 +14,23 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [{ title: "Sign in - Paisa" }],
   }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : undefined,
+  }),
   component: AuthPage,
 });
 
+// Only allow same-origin relative paths as post-login redirect targets.
+function safeNext(next: string | undefined): string | null {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return null;
+  return next;
+}
+
+
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const redirectTarget = safeNext(next) ?? "/dashboard";
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [showPassword, setShowPassword] = useState(false);
@@ -29,9 +41,17 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
+      if (data.session) {
+        if (redirectTarget.startsWith("/")) window.location.href = redirectTarget;
+        else navigate({ to: "/dashboard", replace: true });
+      }
     });
-  }, [navigate]);
+  }, [navigate, redirectTarget]);
+
+  const goNext = () => {
+    // Use full navigation so OAuth-consent (dot-prefixed) route params round-trip.
+    window.location.href = redirectTarget;
+  };
 
   const handleSignIn = async (event: FormEvent) => {
     event.preventDefault();
@@ -40,7 +60,7 @@ function AuthPage() {
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Welcome back!");
-    navigate({ to: "/dashboard", replace: true });
+    goNext();
   };
 
   const handleSignUp = async (event: FormEvent) => {
@@ -50,24 +70,25 @@ function AuthPage() {
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: window.location.origin + redirectTarget,
         data: { name },
       },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Account created. You're in!");
-    navigate({ to: "/dashboard", replace: true });
+    goNext();
   };
 
   const handleGoogle = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: window.location.origin + redirectTarget,
     });
     if (result.error) return toast.error(result.error.message ?? "Google sign-in failed");
     if (result.redirected) return;
-    navigate({ to: "/dashboard", replace: true });
+    goNext();
   };
+
 
   const handleForgotPassword = async () => {
     if (!email) {
