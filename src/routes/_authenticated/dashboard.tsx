@@ -193,50 +193,86 @@ function Dashboard() {
             {isTrendLoading ? (
               <ChartSkeleton height={280} />
             ) : (
-              <figure
-                role="img"
-                tabIndex={0}
-                aria-label={`Bar chart of income versus expenses over the last 6 months. ${trendByMonth
-                  .map(
-                    (r) =>
-                      `${fullMonth(r.month)}: income ${formatINR(r.income)}, expenses ${formatINR(r.expense)}`,
-                  )
-                  .join("; ")}.`}
-                className="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={trendByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/60" />
-                    <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
-                    <YAxis
-                      tickLine={false}
-                      axisLine={false}
-                      fontSize={12}
-                      tickFormatter={(v) => compactINR(Number(v))}
-                      width={60}
-                    />
-                    <Tooltip
-                      formatter={currencyTooltip}
-                      labelFormatter={(label, payload) => {
-                        const key = payload?.[0]?.payload?.month;
-                        return key ? fullMonth(key) : String(label);
-                      }}
-                      contentStyle={{
-                        background: "hsl(var(--background))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: 8,
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="income" name="Income" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="expense" name="Expenses" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-                <figcaption className="sr-only">
-                  Monthly income and expense totals for the last six months.
-                </figcaption>
-              </figure>
+              <>
+                <figure
+                  role="img"
+                  tabIndex={0}
+                  aria-labelledby="trend-chart-title"
+                  aria-describedby="trend-chart-desc trend-chart-table"
+                  className="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <figcaption id="trend-chart-title" className="sr-only">
+                    Income vs expenses, last 6 months
+                  </figcaption>
+                  <p id="trend-chart-desc" className="sr-only">
+                    {`Bar chart of income versus expenses over the last 6 months. ${trendByMonth
+                      .map(
+                        (r) =>
+                          `${fullMonth(r.month)}: income ${formatINR(r.income)}, expenses ${formatINR(r.expense)}`,
+                      )
+                      .join("; ")}.`}
+                  </p>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={trendByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/60" />
+                      <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        fontSize={12}
+                        tickFormatter={(v) => compactINR(Number(v))}
+                        width={60}
+                      />
+                      <Tooltip
+                        formatter={currencyTooltip}
+                        labelFormatter={(label, payload) => {
+                          const key = payload?.[0]?.payload?.month;
+                          return key ? fullMonth(key) : String(label);
+                        }}
+                        wrapperStyle={{ outline: "none" }}
+                        contentStyle={{
+                          background: "hsl(var(--background))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: 8,
+                        }}
+                      />
+                      <Legend />
+                      <Bar dataKey="income" name="Income" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="expense" name="Expenses" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </figure>
+                <details className="mt-3 rounded-md border border-border/60 text-sm [&_summary]:focus-visible:ring-2 [&_summary]:focus-visible:ring-ring">
+                  <summary className="cursor-pointer px-3 py-2 text-muted-foreground outline-none">
+                    Show data table
+                  </summary>
+                  <div className="overflow-x-auto px-3 pb-3">
+                    <table id="trend-chart-table" className="w-full text-left">
+                      <caption className="sr-only">
+                        Monthly income and expense totals for the last six months.
+                      </caption>
+                      <thead>
+                        <tr className="text-xs uppercase text-muted-foreground">
+                          <th scope="col" className="py-1 pr-3 font-medium">Month</th>
+                          <th scope="col" className="py-1 pr-3 font-medium">Income</th>
+                          <th scope="col" className="py-1 font-medium">Expenses</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {trendByMonth.map((r) => (
+                          <tr key={r.month} className="border-t border-border/40">
+                            <th scope="row" className="py-1 pr-3 font-normal">{fullMonth(r.month)}</th>
+                            <td className="py-1 pr-3">{formatINR(r.income)}</td>
+                            <td className="py-1">{formatINR(r.expense)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+              </>
             )}
+
           </CardContent>
         </Card>
 
