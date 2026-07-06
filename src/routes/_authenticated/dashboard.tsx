@@ -193,50 +193,86 @@ function Dashboard() {
             {isTrendLoading ? (
               <ChartSkeleton height={280} />
             ) : (
-              <figure
-                role="img"
-                tabIndex={0}
-                aria-label={`Bar chart of income versus expenses over the last 6 months. ${trendByMonth
-                  .map(
-                    (r) =>
-                      `${fullMonth(r.month)}: income ${formatINR(r.income)}, expenses ${formatINR(r.expense)}`,
-                  )
-                  .join("; ")}.`}
-                className="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={trendByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/60" />
-                    <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
-                    <YAxis
-                      tickLine={false}
-                      axisLine={false}
-                      fontSize={12}
-                      tickFormatter={(v) => compactINR(Number(v))}
-                      width={60}
-                    />
-                    <Tooltip
-                      formatter={currencyTooltip}
-                      labelFormatter={(label, payload) => {
-                        const key = payload?.[0]?.payload?.month;
-                        return key ? fullMonth(key) : String(label);
-                      }}
-                      contentStyle={{
-                        background: "hsl(var(--background))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: 8,
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="income" name="Income" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="expense" name="Expenses" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-                <figcaption className="sr-only">
-                  Monthly income and expense totals for the last six months.
-                </figcaption>
-              </figure>
+              <>
+                <figure
+                  role="img"
+                  tabIndex={0}
+                  aria-labelledby="trend-chart-title"
+                  aria-describedby="trend-chart-desc trend-chart-table"
+                  className="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <figcaption id="trend-chart-title" className="sr-only">
+                    Income vs expenses, last 6 months
+                  </figcaption>
+                  <p id="trend-chart-desc" className="sr-only">
+                    {`Bar chart of income versus expenses over the last 6 months. ${trendByMonth
+                      .map(
+                        (r) =>
+                          `${fullMonth(r.month)}: income ${formatINR(r.income)}, expenses ${formatINR(r.expense)}`,
+                      )
+                      .join("; ")}.`}
+                  </p>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={trendByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/60" />
+                      <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        fontSize={12}
+                        tickFormatter={(v) => compactINR(Number(v))}
+                        width={60}
+                      />
+                      <Tooltip
+                        formatter={currencyTooltip}
+                        labelFormatter={(label, payload) => {
+                          const key = payload?.[0]?.payload?.month;
+                          return key ? fullMonth(key) : String(label);
+                        }}
+                        wrapperStyle={{ outline: "none" }}
+                        contentStyle={{
+                          background: "hsl(var(--background))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: 8,
+                        }}
+                      />
+                      <Legend />
+                      <Bar dataKey="income" name="Income" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="expense" name="Expenses" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </figure>
+                <details className="mt-3 rounded-md border border-border/60 text-sm [&_summary]:focus-visible:ring-2 [&_summary]:focus-visible:ring-ring">
+                  <summary className="cursor-pointer px-3 py-2 text-muted-foreground outline-none">
+                    Show data table
+                  </summary>
+                  <div className="overflow-x-auto px-3 pb-3">
+                    <table id="trend-chart-table" className="w-full text-left">
+                      <caption className="sr-only">
+                        Monthly income and expense totals for the last six months.
+                      </caption>
+                      <thead>
+                        <tr className="text-xs uppercase text-muted-foreground">
+                          <th scope="col" className="py-1 pr-3 font-medium">Month</th>
+                          <th scope="col" className="py-1 pr-3 font-medium">Income</th>
+                          <th scope="col" className="py-1 font-medium">Expenses</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {trendByMonth.map((r) => (
+                          <tr key={r.month} className="border-t border-border/40">
+                            <th scope="row" className="py-1 pr-3 font-normal">{fullMonth(r.month)}</th>
+                            <td className="py-1 pr-3">{formatINR(r.income)}</td>
+                            <td className="py-1">{formatINR(r.expense)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
+              </>
             )}
+
           </CardContent>
         </Card>
 
@@ -256,57 +292,93 @@ function Dashboard() {
               (() => {
                 const total = expenseByCategory.reduce((s, e) => s + e.value, 0);
                 return (
-                  <figure
-                    role="img"
-                    tabIndex={0}
-                    aria-label={`Donut chart of expenses by category for ${monthYearLabel(monthYear)}. Total ${formatINR(total)}. ${expenseByCategory
-                      .map(
-                        (e) =>
-                          `${e.name}: ${formatINR(e.value)} (${Math.round((e.value / total) * 100)}%)`,
-                      )
-                      .join(", ")}.`}
-                    className="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <ResponsiveContainer width="100%" height={280}>
-                      <PieChart>
-                        <Tooltip
-                          formatter={(value: unknown, name: unknown) => [
-                            `${formatINR(Number(value))} (${Math.round((Number(value) / total) * 100)}%)`,
-                            String(name ?? ""),
-                          ]}
-                          contentStyle={{
-                            background: "hsl(var(--background))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: 8,
-                          }}
-                        />
-                        <Pie
-                          data={expenseByCategory}
-                          dataKey="value"
-                          nameKey="name"
-                          innerRadius={60}
-                          outerRadius={100}
-                          paddingAngle={2}
-                        >
-                          {expenseByCategory.map((_, i) => (
-                            <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Legend
-                          verticalAlign="bottom"
-                          height={36}
-                          iconType="circle"
-                          wrapperStyle={{ fontSize: 12 }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <figcaption className="sr-only">
-                      Share of monthly expenses grouped by category.
-                    </figcaption>
-                  </figure>
+                  <>
+                    <figure
+                      role="img"
+                      tabIndex={0}
+                      aria-labelledby="cat-chart-title"
+                      aria-describedby="cat-chart-desc cat-chart-table"
+                      className="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <figcaption id="cat-chart-title" className="sr-only">
+                        Expenses by category for {monthYearLabel(monthYear)}
+                      </figcaption>
+                      <p id="cat-chart-desc" className="sr-only">
+                        {`Donut chart of expenses by category for ${monthYearLabel(monthYear)}. Total ${formatINR(total)}. ${expenseByCategory
+                          .map(
+                            (e) =>
+                              `${e.name}: ${formatINR(e.value)} (${Math.round((e.value / total) * 100)}%)`,
+                          )
+                          .join(", ")}.`}
+                      </p>
+                      <ResponsiveContainer width="100%" height={280}>
+                        <PieChart>
+                          <Tooltip
+                            formatter={(value: unknown, name: unknown) => [
+                              `${formatINR(Number(value))} (${Math.round((Number(value) / total) * 100)}%)`,
+                              String(name ?? ""),
+                            ]}
+                            wrapperStyle={{ outline: "none" }}
+                            contentStyle={{
+                              background: "hsl(var(--background))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: 8,
+                            }}
+                          />
+                          <Pie
+                            data={expenseByCategory}
+                            dataKey="value"
+                            nameKey="name"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={2}
+                          >
+                            {expenseByCategory.map((_, i) => (
+                              <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Legend
+                            verticalAlign="bottom"
+                            height={36}
+                            iconType="circle"
+                            wrapperStyle={{ fontSize: 12 }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </figure>
+                    <details className="mt-3 rounded-md border border-border/60 text-sm [&_summary]:focus-visible:ring-2 [&_summary]:focus-visible:ring-ring">
+                      <summary className="cursor-pointer px-3 py-2 text-muted-foreground outline-none">
+                        Show data table
+                      </summary>
+                      <div className="overflow-x-auto px-3 pb-3">
+                        <table id="cat-chart-table" className="w-full text-left">
+                          <caption className="sr-only">
+                            Share of monthly expenses grouped by category.
+                          </caption>
+                          <thead>
+                            <tr className="text-xs uppercase text-muted-foreground">
+                              <th scope="col" className="py-1 pr-3 font-medium">Category</th>
+                              <th scope="col" className="py-1 pr-3 font-medium">Amount</th>
+                              <th scope="col" className="py-1 font-medium">Share</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {expenseByCategory.map((e) => (
+                              <tr key={e.name} className="border-t border-border/40">
+                                <th scope="row" className="py-1 pr-3 font-normal">{e.name}</th>
+                                <td className="py-1 pr-3">{formatINR(e.value)}</td>
+                                <td className="py-1">{Math.round((e.value / total) * 100)}%</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </details>
+                  </>
                 );
               })()
             )}
+
           </CardContent>
         </Card>
       </div>
