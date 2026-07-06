@@ -82,6 +82,7 @@ type FormState = { name: string; target: string; saved: string; deadline: string
 const emptyForm: FormState = { name: "", target: "", saved: "", deadline: "" };
 
 function GoalsPage() {
+  const [userId, setUserId] = useState<string | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -90,12 +91,40 @@ function GoalsPage() {
   const [contributeId, setContributeId] = useState<string | null>(null);
   const [contributeAmt, setContributeAmt] = useState("");
 
-  useEffect(() => setGoals(loadGoals()), []);
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!active) return;
+      const uid = data.user?.id ?? null;
+      setUserId(uid);
+      setGoals(uid ? loadGoals(uid) : []);
+      // Best-effort cleanup of legacy unscoped key so it isn't visible cross-user
+      try {
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        setUserId(null);
+        setGoals([]);
+      } else if (session?.user) {
+        setUserId(session.user.id);
+        setGoals(loadGoals(session.user.id));
+      }
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
 
   const persist = (next: Goal[]) => {
     setGoals(next);
-    saveGoals(next);
+    if (userId) saveGoals(userId, next);
   };
+
 
   const stats = useMemo(() => {
     const totalTarget = goals.reduce((s, g) => s + g.target, 0);
