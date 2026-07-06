@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { formatINR } from "@/lib/format";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/goals")({
   head: () => ({ meta: [{ title: "Goals — Paisa" }] }),
@@ -54,20 +55,22 @@ type Goal = {
   deadline?: string;
 };
 
-const STORAGE_KEY = "paisa.goals.v1";
+const LEGACY_STORAGE_KEY = "paisa.goals.v1";
+const storageKeyFor = (userId: string) => `paisa.goals.v1.${userId}`;
 
-function loadGoals(): Goal[] {
+function loadGoals(userId: string): Goal[] {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return JSON.parse(localStorage.getItem(storageKeyFor(userId)) || "[]");
   } catch {
     return [];
   }
 }
 
-function saveGoals(goals: Goal[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+function saveGoals(userId: string, goals: Goal[]) {
+  localStorage.setItem(storageKeyFor(userId), JSON.stringify(goals));
 }
+
 
 function daysUntil(date?: string): number | null {
   if (!date) return null;
