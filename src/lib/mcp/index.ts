@@ -25,5 +25,15 @@ export default defineMcp({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [listTransactions, addTransaction, monthlySummary, listBudgets, listCategories],
+  tools: [
+    listTransactions,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    monthlySummary,
+    spendingSummary,
+    listBudgets,
+    upsertBudget,
+    listCategories,
+  ],
 });
