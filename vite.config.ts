@@ -6,6 +6,29 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
+import type { Plugin, ResolvedConfig } from "vite";
+
+function mcpPluginWithWindowsRoot(): Plugin {
+  const plugin = mcpPlugin();
+  const configResolved = plugin.configResolved;
+
+  if (typeof configResolved !== "function") {
+    return plugin;
+  }
+
+  return {
+    ...plugin,
+    configResolved(config: ResolvedConfig) {
+      // @lovable.dev/mcp-js 0.20.0 compares paths with the native Windows separator.
+      const mcpConfig =
+        process.platform === "win32"
+          ? ({ ...config, root: config.root.replace(/\//g, "\\") } as ResolvedConfig)
+          : config;
+
+      return configResolved(mcpConfig);
+    },
+  };
+}
 
 export default defineConfig({
   tanstackStart: {
@@ -14,7 +37,7 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    plugins: [mcpPlugin()],
+    plugins: [mcpPluginWithWindowsRoot()],
   },
 });
 
