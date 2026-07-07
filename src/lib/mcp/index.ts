@@ -6,6 +6,7 @@ import deleteTransaction from "./tools/delete-transaction";
 import monthlySummary from "./tools/monthly-summary";
 import spendingSummary from "./tools/spending-summary";
 import listBudgets from "./tools/list-budgets";
+import listCategoryBudgets from "./tools/list-category-budgets";
 import upsertBudget from "./tools/upsert-budget";
 import listCategories from "./tools/list-categories";
 
@@ -33,6 +34,7 @@ export default defineMcp({
     monthlySummary,
     spendingSummary,
     listBudgets,
+    listCategoryBudgets,
     upsertBudget,
     listCategories,
   ],
