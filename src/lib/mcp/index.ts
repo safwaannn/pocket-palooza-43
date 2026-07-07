@@ -1,8 +1,12 @@
 import { auth, defineMcp } from "@lovable.dev/mcp-js";
 import listTransactions from "./tools/list-transactions";
 import addTransaction from "./tools/add-transaction";
+import updateTransaction from "./tools/update-transaction";
+import deleteTransaction from "./tools/delete-transaction";
 import monthlySummary from "./tools/monthly-summary";
+import spendingSummary from "./tools/spending-summary";
 import listBudgets from "./tools/list-budgets";
+import upsertBudget from "./tools/upsert-budget";
 import listCategories from "./tools/list-categories";
 
 // The OAuth issuer MUST be the direct Supabase host — publish rewrites
@@ -21,5 +25,15 @@ export default defineMcp({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [listTransactions, addTransaction, monthlySummary, listBudgets, listCategories],
+  tools: [
+    listTransactions,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    monthlySummary,
+    spendingSummary,
+    listBudgets,
+    upsertBudget,
+    listCategories,
+  ],
 });
