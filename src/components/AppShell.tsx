@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { AIChat } from "@/components/AIChat";
 import type { ReactNode } from "react";
 
 const nav = [
@@ -166,6 +167,7 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
         </header>
         <main id="main-content" tabIndex={-1} className="flex-1 overflow-x-hidden p-4 md:p-8 focus:outline-none">{children}</main>
       </div>
+      <AIChat />
     </div>
   );
 }
