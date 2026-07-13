@@ -12,6 +12,8 @@ import {
   LogOut,
   Wallet,
   Menu,
+  Repeat,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -22,6 +24,7 @@ import type { ReactNode } from "react";
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/transactions", label: "Transactions", icon: Receipt },
+  { to: "/recurring", label: "Recurring", icon: Repeat },
   { to: "/categories", label: "Categories", icon: Tags },
   { to: "/budgets", label: "Budgets", icon: Target },
   { to: "/alerts", label: "Alerts", icon: Bell, badgeKey: "alerts" as const },
