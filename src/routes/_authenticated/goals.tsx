@@ -38,7 +38,7 @@ import {
   CalendarClock,
   CheckCircle2,
 } from "lucide-react";
-import { formatINR } from "@/lib/format";
+import { useCurrency } from "@/hooks/use-currency";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -82,6 +82,7 @@ type FormState = { name: string; target: string; saved: string; deadline: string
 const emptyForm: FormState = { name: "", target: "", saved: "", deadline: "" };
 
 function GoalsPage() {
+  const { format } = useCurrency();
   const [userId, setUserId] = useState<string | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -201,7 +202,7 @@ function GoalsPage() {
     const amt = Number(contributeAmt);
     if (!contributeId || !amt || amt <= 0) return toast.error("Enter a valid amount");
     adjustSaved(contributeId, amt);
-    toast.success(`Added ${formatINR(amt)}`);
+    toast.success(`Added ${format(amt)}`);
     setContributeId(null);
     setContributeAmt("");
   };
@@ -222,10 +223,10 @@ function GoalsPage() {
         <div className="grid gap-4 sm:grid-cols-3 mb-6">
           <StatCard
             label="Total saved"
-            value={formatINR(stats.totalSaved)}
+            value={format(stats.totalSaved)}
             icon={Wallet}
             tone="success"
-            hint={`of ${formatINR(stats.totalTarget)}`}
+            hint={`of ${format(stats.totalTarget)}`}
           />
           <StatCard
             label="Active goals"
@@ -320,13 +321,13 @@ function GoalsPage() {
                       <div>
                         <p className="text-xs text-muted-foreground">Saved</p>
                         <p className="finance-figure text-2xl font-semibold">
-                          {formatINR(g.saved)}
+                          {format(g.saved)}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-muted-foreground">Target</p>
                         <p className="finance-figure text-xl font-semibold">
-                          {formatINR(g.target)}
+                          {format(g.target)}
                         </p>
                       </div>
                     </div>
@@ -354,10 +355,10 @@ function GoalsPage() {
                           ? "Goal reached"
                           : pct >= 80
                             ? "Almost there"
-                            : `${formatINR(remaining)} to go`}
+                            : `${format(remaining)} to go`}
                       </span>
                       <span className="text-muted-foreground">
-                        {formatINR(g.saved)} / {formatINR(g.target)}
+                        {format(g.saved)} / {format(g.target)}
                       </span>
                     </div>
                   </div>

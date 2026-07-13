@@ -12,7 +12,8 @@ import {
   useTransactions,
   type Transaction,
 } from "@/lib/finance-queries";
-import { currentMonthYear, formatINR, monthRange, monthYearLabel, monthsAgo } from "@/lib/format";
+import { currentMonthYear, monthRange, monthYearLabel, monthsAgo } from "@/lib/format";
+import { useCurrency } from "@/hooks/use-currency";
 import { AlertTriangle, ArrowRight, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { StatCardGridSkeleton, BudgetListSkeleton, ListSkeleton, ChartSkeleton } from "@/components/Skeletons";
 import {
@@ -39,12 +40,8 @@ const CHART_COLORS = [
   "var(--chart-7)",
 ];
 
-const currencyTooltip = (value: unknown, name: unknown) => [
-  formatINR(Number(value)),
-  String(name ?? ""),
-];
-const compactINR = (n: number) =>
-  new Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 }).format(n || 0);
+const currencyCompact = (n: number, locale: string) =>
+  new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 1 }).format(n || 0);
 const shortMonth = (ym: string) => {
   const [y, m] = ym.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("en-IN", { month: "short" });
@@ -61,6 +58,12 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const monthYear = currentMonthYear();
+  const { format, info: currencyInfo } = useCurrency();
+  const currencyTooltip = (value: unknown, name: unknown) => [
+    format(Number(value)),
+    String(name ?? ""),
+  ];
+  const compactCurrency = (n: number) => currencyCompact(n, currencyInfo.locale);
   const { start, end } = monthRange(monthYear);
   const { data: monthTransactions = [], isLoading: isMonthLoading } = useTransactions({
     start,
@@ -166,7 +169,7 @@ function Dashboard() {
               <div key={budget.id}>
                 <strong>{budget.name}</strong>{" "}
                 {budget.pct >= 100 ? "is over budget" : `has used ${Math.round(budget.pct)}%`} of{" "}
-                {formatINR(budget.limit)}.
+                {format(budget.limit)}.
               </div>
             ))}
           </AlertDescription>
@@ -177,9 +180,9 @@ function Dashboard() {
         <StatCardGridSkeleton count={3} />
       ) : (
         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <StatCard label="Income" value={formatINR(totals.income)} icon={TrendingUp} tone="success" />
-          <StatCard label="Expenses" value={formatINR(totals.expense)} icon={TrendingDown} tone="destructive" />
-          <StatCard label="Balance" value={formatINR(balance)} icon={Wallet} tone={balance >= 0 ? "primary" : "destructive"} />
+          <StatCard label="Income" value={format(totals.income)} icon={TrendingUp} tone="success" />
+          <StatCard label="Expenses" value={format(totals.expense)} icon={TrendingDown} tone="destructive" />
+          <StatCard label="Balance" value={format(balance)} icon={Wallet} tone={balance >= 0 ? "primary" : "destructive"} />
         </div>
       )}
 
@@ -208,7 +211,7 @@ function Dashboard() {
                     {`Bar chart of income versus expenses over the last 6 months. ${trendByMonth
                       .map(
                         (r) =>
-                          `${fullMonth(r.month)}: income ${formatINR(r.income)}, expenses ${formatINR(r.expense)}`,
+                          `${fullMonth(r.month)}: income ${format(r.income)}, expenses ${format(r.expense)}`,
                       )
                       .join("; ")}.`}
                   </p>
@@ -220,7 +223,7 @@ function Dashboard() {
                         tickLine={false}
                         axisLine={false}
                         fontSize={12}
-                        tickFormatter={(v) => compactINR(Number(v))}
+                        tickFormatter={(v) => compactCurrency(Number(v))}
                         width={60}
                       />
                       <Tooltip
@@ -262,8 +265,8 @@ function Dashboard() {
                         {trendByMonth.map((r) => (
                           <tr key={r.month} className="border-t border-border/40">
                             <th scope="row" className="py-1 pr-3 font-normal">{fullMonth(r.month)}</th>
-                            <td className="py-1 pr-3">{formatINR(r.income)}</td>
-                            <td className="py-1">{formatINR(r.expense)}</td>
+                            <td className="py-1 pr-3">{format(r.income)}</td>
+                            <td className="py-1">{format(r.expense)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -304,10 +307,10 @@ function Dashboard() {
                         Expenses by category for {monthYearLabel(monthYear)}
                       </figcaption>
                       <p id="cat-chart-desc" className="sr-only">
-                        {`Donut chart of expenses by category for ${monthYearLabel(monthYear)}. Total ${formatINR(total)}. ${expenseByCategory
+                        {`Donut chart of expenses by category for ${monthYearLabel(monthYear)}. Total ${format(total)}. ${expenseByCategory
                           .map(
                             (e) =>
-                              `${e.name}: ${formatINR(e.value)} (${Math.round((e.value / total) * 100)}%)`,
+                              `${e.name}: ${format(e.value)} (${Math.round((e.value / total) * 100)}%)`,
                           )
                           .join(", ")}.`}
                       </p>
@@ -315,7 +318,7 @@ function Dashboard() {
                         <PieChart>
                           <Tooltip
                             formatter={(value: unknown, name: unknown) => [
-                              `${formatINR(Number(value))} (${Math.round((Number(value) / total) * 100)}%)`,
+                              `${format(Number(value))} (${Math.round((Number(value) / total) * 100)}%)`,
                               String(name ?? ""),
                             ]}
                             wrapperStyle={{ outline: "none" }}
@@ -366,7 +369,7 @@ function Dashboard() {
                             {expenseByCategory.map((e) => (
                               <tr key={e.name} className="border-t border-border/40">
                                 <th scope="row" className="py-1 pr-3 font-normal">{e.name}</th>
-                                <td className="py-1 pr-3">{formatINR(e.value)}</td>
+                                <td className="py-1 pr-3">{format(e.value)}</td>
                                 <td className="py-1">{Math.round((e.value / total) * 100)}%</td>
                               </tr>
                             ))}
@@ -389,7 +392,7 @@ function Dashboard() {
             <div>
               <CardTitle>Budget status</CardTitle>
               <CardDescription>
-                {formatINR(budgetSpent)} spent from {formatINR(totalBudget)} planned.
+                {format(budgetSpent)} spent from {format(totalBudget)} planned.
               </CardDescription>
             </div>
             <Button asChild variant="outline" size="sm">
@@ -420,7 +423,7 @@ function Dashboard() {
                             : "text-muted-foreground"
                       }
                     >
-                      {formatINR(budget.spent)} / {formatINR(budget.limit)}
+                      {format(budget.spent)} / {format(budget.limit)}
                     </span>
                   </div>
                   <Progress
@@ -522,7 +525,7 @@ function RecentTransaction({ transaction }: { transaction: Transaction }) {
         }`}
       >
         {isIncome ? "+" : "-"}
-        {formatINR(transaction.amount)}
+        {format(transaction.amount)}
       </div>
     </div>
   );

@@ -34,7 +34,8 @@ import {
   useCategories,
   useMonthlySpending,
 } from "@/lib/finance-queries";
-import { currentMonthYear, formatINR, monthYearLabel } from "@/lib/format";
+import { currentMonthYear, monthYearLabel } from "@/lib/format";
+import { useCurrency } from "@/hooks/use-currency";
 import { toast } from "sonner";
 import { AlertTriangle, Trash2 } from "lucide-react";
 
@@ -45,6 +46,7 @@ export const Route = createFileRoute("/_authenticated/budgets")({
 
 function BudgetsPage() {
   const qc = useQueryClient();
+  const { format } = useCurrency();
   const [monthYear, setMonthYear] = useState(currentMonthYear());
   const { data: categories = [] } = useCategories();
   const { data: budgets = [], isLoading } = useBudgets(monthYear);
@@ -170,11 +172,11 @@ function BudgetsPage() {
       )}
 
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <SummaryCard label="Planned" value={formatINR(totalLimit)} />
-        <SummaryCard label="Spent" value={formatINR(totalSpent)} tone="destructive" />
+        <SummaryCard label="Planned" value={format(totalLimit)} />
+        <SummaryCard label="Spent" value={format(totalSpent)} tone="destructive" />
         <SummaryCard
           label={totalRemaining >= 0 ? "Remaining" : "Over budget"}
-          value={formatINR(Math.abs(totalRemaining))}
+          value={format(Math.abs(totalRemaining))}
           tone={totalRemaining >= 0 ? "success" : "destructive"}
         />
       </div>
@@ -260,8 +262,8 @@ function BudgetsPage() {
                     <div className="font-medium">{budget.name}</div>
                     <div className="text-xs text-muted-foreground">
                       {budget.remaining >= 0
-                        ? `${formatINR(budget.remaining)} remaining`
-                        : `${formatINR(Math.abs(budget.remaining))} over`}
+                        ? `${format(budget.remaining)} remaining`
+                        : `${format(Math.abs(budget.remaining))} over`}
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-3 sm:justify-end">
@@ -274,7 +276,7 @@ function BudgetsPage() {
                             : "text-muted-foreground"
                       }`}
                     >
-                      {formatINR(budget.used)} / {formatINR(budget.limit_amount)} (
+                      {format(budget.used)} / {format(budget.limit_amount)} (
                       {Math.round(budget.pct)}%)
                     </span>
                     <AlertDialog>

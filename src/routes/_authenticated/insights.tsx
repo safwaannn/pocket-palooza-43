@@ -5,7 +5,7 @@ import { StatCard } from "@/components/StatCard";
 import { EmptyState } from "@/components/EmptyState";
 import { StatCardGridSkeleton, CardSkeleton } from "@/components/Skeletons";
 import { useTransactions } from "@/lib/finance-queries";
-import { formatINR } from "@/lib/format";
+import { useCurrency } from "@/hooks/use-currency";
 import { Sparkles, TrendingUp, TrendingDown, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -15,6 +15,7 @@ export const Route = createFileRoute("/_authenticated/insights")({
 });
 
 function InsightsPage() {
+  const { format } = useCurrency();
   const { data: txns = [], isLoading } = useTransactions();
 
   if (isLoading) {
@@ -82,7 +83,7 @@ function InsightsPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <StatCard label="Avg expense" value={formatINR(avgExpense)} icon={TrendingDown} />
+        <StatCard label="Avg expense" value={format(avgExpense)} icon={TrendingDown} />
         <StatCard
           label="Savings rate"
           value={`${savingsRate.toFixed(0)}%`}
@@ -91,7 +92,7 @@ function InsightsPage() {
         />
         <StatCard
           label="Biggest expense"
-          value={biggest ? formatINR(biggest.amount) : "—"}
+          value={biggest ? format(biggest.amount) : "—"}
           icon={TrendingDown}
           hint={biggest?.category?.name}
           tone="destructive"
@@ -100,7 +101,7 @@ function InsightsPage() {
           label="Heaviest day"
           value={heaviestDay ? heaviestDay[0] : "—"}
           icon={Calendar}
-          hint={heaviestDay ? formatINR(heaviestDay[1]) : undefined}
+          hint={heaviestDay ? format(heaviestDay[1]) : undefined}
         />
       </div>
 
@@ -120,7 +121,7 @@ function InsightsPage() {
                       <span className="font-medium">{c.name}</span>
                       <span className="text-xs text-muted-foreground">· {c.count} txns</span>
                     </div>
-                    <span className="font-semibold">{formatINR(c.total)}</span>
+                    <span className="font-semibold">{format(c.total)}</span>
                   </div>
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
                     <div

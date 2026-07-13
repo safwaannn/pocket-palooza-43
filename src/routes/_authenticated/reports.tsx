@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTransactions } from "@/lib/finance-queries";
-import { formatINR, monthsAgo } from "@/lib/format";
+import { monthsAgo } from "@/lib/format";
+import { useCurrency } from "@/hooks/use-currency";
 import {
   Bar,
   BarChart,
@@ -41,9 +42,9 @@ const CHART_COLORS = [
   "var(--chart-7)",
 ];
 
-const currencyTooltip = (value: unknown) => formatINR(Number(value));
-
 function ReportsPage() {
+  const { format } = useCurrency();
+  const currencyTooltip = (value: unknown) => format(Number(value));
   const [start, setStart] = useState(monthsAgo(5));
   const [end, setEnd] = useState(today());
   const { data: txns = [], isLoading } = useTransactions({ start, end });
@@ -129,11 +130,11 @@ function ReportsPage() {
             aria-live="polite"
             aria-label="Totals for selected range"
           >
-            <MiniMetric label="Income" value={formatINR(totalIncome)} tone="success" />
-            <MiniMetric label="Expense" value={formatINR(totalExpense)} tone="destructive" />
+            <MiniMetric label="Income" value={format(totalIncome)} tone="success" />
+            <MiniMetric label="Expense" value={format(totalExpense)} tone="destructive" />
             <MiniMetric
               label="Net"
-              value={formatINR(net)}
+              value={format(net)}
               tone={net >= 0 ? "success" : "destructive"}
             />
           </div>
@@ -145,11 +146,11 @@ function ReportsPage() {
         <SummaryCard
           label="Top expense"
           value={topExpense ? topExpense.name : "None"}
-          detail={topExpense ? formatINR(topExpense.value) : "No expense data"}
+          detail={topExpense ? format(topExpense.value) : "No expense data"}
         />
         <SummaryCard
           label="Monthly average"
-          value={formatINR(byMonth.length ? totalExpense / byMonth.length : 0)}
+          value={format(byMonth.length ? totalExpense / byMonth.length : 0)}
           detail="Expense across active months"
         />
       </div>
@@ -189,7 +190,7 @@ function ReportsPage() {
                 {expenseByCat.slice(0, 6).map((row) => (
                   <div key={row.name} className="flex items-center justify-between py-2 text-sm">
                     <span className="truncate">{row.name}</span>
-                    <span className="font-medium">{formatINR(row.value)}</span>
+                    <span className="font-medium">{format(row.value)}</span>
                   </div>
                 ))}
               </div>

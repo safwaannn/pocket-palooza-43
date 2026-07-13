@@ -32,7 +32,7 @@ import {
   useTransactions,
   type Transaction,
 } from "@/lib/finance-queries";
-import { formatINR } from "@/lib/format";
+import { useCurrency } from "@/hooks/use-currency";
 import { QuickAddButton, TransactionForm } from "@/components/TransactionForm";
 import { toast } from "sonner";
 import { Download, FilterX, Pencil, Trash2, Upload } from "lucide-react";
@@ -46,6 +46,7 @@ export const Route = createFileRoute("/_authenticated/transactions")({
 
 function TransactionsPage() {
   const qc = useQueryClient();
+  const { format } = useCurrency();
   const { data: categories = [] } = useCategories();
   const [type, setType] = useState<"all" | "income" | "expense">("all");
   const [categoryId, setCategoryId] = useState("all");
@@ -151,11 +152,11 @@ function TransactionsPage() {
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <SummaryCard label="Income" value={formatINR(totals.income)} tone="success" />
-        <SummaryCard label="Expense" value={formatINR(totals.expense)} tone="destructive" />
+        <SummaryCard label="Income" value={format(totals.income)} tone="success" />
+        <SummaryCard label="Expense" value={format(totals.expense)} tone="destructive" />
         <SummaryCard
           label="Net"
-          value={formatINR(balance)}
+          value={format(balance)}
           tone={balance >= 0 ? "success" : "destructive"}
         />
       </div>
@@ -349,6 +350,7 @@ function TransactionRow({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const { format } = useCurrency();
   const isIncome = transaction.type === "income";
 
   return (
@@ -379,7 +381,7 @@ function TransactionRow({
           }`}
         >
           {isIncome ? "+" : "-"}
-          {formatINR(transaction.amount)}
+          {format(transaction.amount)}
         </div>
         <div className="flex gap-1">
           <Button size="icon" variant="ghost" onClick={onEdit}>
