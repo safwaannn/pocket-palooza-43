@@ -35,8 +35,9 @@ import {
 import { formatINR } from "@/lib/format";
 import { QuickAddButton, TransactionForm } from "@/components/TransactionForm";
 import { toast } from "sonner";
-import { Download, FilterX, Pencil, Trash2 } from "lucide-react";
+import { Download, FilterX, Pencil, Trash2, Upload } from "lucide-react";
 import { downloadCSV } from "@/lib/csv-export";
+import { ImportCSVDialog } from "@/components/ImportCSVDialog";
 
 export const Route = createFileRoute("/_authenticated/transactions")({
   head: () => ({ meta: [{ title: "Transactions - Paisa" }] }),
@@ -127,6 +128,14 @@ function TransactionsPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <ImportCSVDialog
+            trigger={
+              <Button type="button" variant="outline" className="gap-2">
+                <Upload className="h-4 w-4" aria-hidden="true" />
+                Import CSV
+              </Button>
+            }
+          />
           <Button
             type="button"
             variant="outline"
