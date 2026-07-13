@@ -15,17 +15,21 @@
 
 - 🔐 **Email / Password + Google OAuth** sign-in (with show / hide password toggle)
 - 💰 **Transactions** — add, edit, delete income & expenses with categories, notes, and dates
+- 📥 **CSV import / export** — bulk-import transactions from any spreadsheet, download all your data
+- 🔁 **Recurring transactions** — schedule daily / weekly / monthly / yearly auto-posts (rent, salary, subscriptions)
+- 💱 **Multi-currency** — switch between INR, USD, EUR, GBP, JPY, AUD, CAD, SGD, AED (per-user setting)
 - 🏷️ **Categories** — default global ones (Food, Rent, Salary, …) plus your own custom ones
 - 🎯 **Monthly Budgets** — set per-category limits and watch progress bars fill
 - 🚨 **Smart Alerts** — automatic notifications at **80%** and **100%** of each budget
+- 📬 **Email delivery** — budget alerts optionally emailed via a Resend-backed server endpoint
+- 🛡️ **Admin panel** — dedicated `user_roles` table with `has_role()` guard; admins can view every user's totals and grant/revoke roles
 - 📊 **Reports** — pie & bar charts powered by Recharts to reveal spending patterns
 - 🎯 **Goals** — savings goals tracking
 - 💡 **Insights** — AI-style summary cards on your spending behaviour
 - 🔔 **Notifications center**
-- ⚙️ **Settings** — profile, preferences, sign-out
+- ⚙️ **Settings** — profile, currency, sign-out
 - 🛡️ **Row-Level Security** — every row is scoped to `auth.uid()` so your data stays yours
 - 📱 **Fully responsive** with a polished glass / emerald design system
-- 🌗 Currency-aware (INR `₹` by default)
 
 ---
 
@@ -145,20 +149,24 @@ Every policy ensures users can only read / write their own rows.
 
 | Table | Purpose | Key Columns |
 |---|---|---|
-| `profiles` | One row per signed-up user (auto-created via trigger) | `id` → `auth.users(id)`, `name` |
+| `profiles` | One row per signed-up user (auto-created via trigger) | `id` → `auth.users(id)`, `name`, `currency` |
 | `categories` | Income / expense categories. `user_id IS NULL` = global default | `id`, `user_id?`, `name`, `type` |
 | `transactions` | Every income or expense entry | `id`, `user_id`, `category_id?`, `amount`, `type`, `note`, `date` |
+| `recurring_transactions` | Templates that auto-post on `next_run` (daily / weekly / monthly / yearly) | `id`, `user_id`, `category_id?`, `type`, `amount`, `frequency`, `interval_count`, `start_date`, `next_run`, `end_date?`, `active`, `last_run?` |
 | `budgets` | One per (user, category, month) — `month_year = 'YYYY-MM'` | `id`, `user_id`, `category_id`, `month_year`, `limit_amount` |
-| `budget_alerts` | Triggered when a budget hits 80% or 100% | `id`, `user_id`, `category_id`, `month_year`, `threshold`, `acknowledged` |
+| `budget_alerts` | Triggered when a budget hits 80% or 100% | `id`, `user_id`, `category_id`, `month_year`, `threshold`, `acknowledged`, `emailed` |
+| `user_roles` | Role assignments backing the admin panel | `id`, `user_id`, `role` (`'admin' \| 'user'`) |
 
 **Enums**
 
 - `transaction_type` — `'income' | 'expense'`
+- `app_role` — `'admin' | 'user'`
 
 **Auto-magic**
 
-- Trigger `on_auth_user_created` runs `handle_new_user()` after every `auth.users` insert to seed a `profiles` row.
+- Trigger `on_auth_user_created` runs `handle_new_user()` after every `auth.users` insert to seed a `profiles` row **and** grant the default `'user'` role.
 - Default categories are seeded into `categories` with `user_id = NULL` so every authenticated user can read them.
+- SECURITY-DEFINER function `has_role(uid, role)` powers admin RLS policies without opening a hole for self-promotion.
 
 ---
 
@@ -297,13 +305,13 @@ Already shipped ✅
 - Transactions CRUD with filters and search
 - Budgets with 80% / 100% alerts
 - Dashboard, Reports, Insights, Goals, Notifications, Settings
+- CSV import / export
+- Recurring transactions (daily / weekly / monthly / yearly, with pause + end-date)
+- Multi-currency (INR / USD / EUR / GBP / JPY / AUD / CAD / SGD / AED)
+- Email delivery for budget alerts (Resend, via `/api/email-budget-alerts`)
+- Admin / multi-user role layer (`user_roles` + `has_role()`)
 
 Planned 🚧
-- CSV import / export
-- Recurring transactions
-- Multi-currency support
-- Email delivery for budget alerts
-- Admin / multi-user role layer
 - Mobile app (React Native via Expo)
 
 ---
