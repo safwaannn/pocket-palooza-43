@@ -19,17 +19,19 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AIChat } from "@/components/AIChat";
 import { useCurrency } from "@/hooks/use-currency";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import type { ReactNode } from "react";
 
 const nav = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/transactions", label: "Transactions", icon: Receipt },
-  { to: "/recurring", label: "Recurring", icon: Repeat },
-  { to: "/categories", label: "Categories", icon: Tags },
-  { to: "/budgets", label: "Budgets", icon: Target },
-  { to: "/alerts", label: "Alerts", icon: Bell, badgeKey: "alerts" as const },
-  { to: "/reports", label: "Reports", icon: PieChart },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, admin: false },
+  { to: "/transactions", label: "Transactions", icon: Receipt, admin: false },
+  { to: "/recurring", label: "Recurring", icon: Repeat, admin: false },
+  { to: "/categories", label: "Categories", icon: Tags, admin: false },
+  { to: "/budgets", label: "Budgets", icon: Target, admin: false },
+  { to: "/alerts", label: "Alerts", icon: Bell, admin: false, badgeKey: "alerts" as const },
+  { to: "/reports", label: "Reports", icon: PieChart, admin: false },
+  { to: "/settings", label: "Settings", icon: Settings, admin: false },
+  { to: "/admin", label: "Admin", icon: ShieldCheck, admin: true },
 ] as const;
 
 function useUnreadAlerts() {
@@ -50,9 +52,12 @@ function useUnreadAlerts() {
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { data: unread = 0 } = useUnreadAlerts();
+  const { isAdmin } = useIsAdmin();
   return (
     <nav aria-label="Main" className="flex flex-col gap-1">
-      {nav.map((item) => {
+      {nav
+        .filter((item) => !item.admin || isAdmin)
+        .map((item) => {
         const Icon = item.icon;
         const active = pathname === item.to;
         const showBadge = "badgeKey" in item && item.badgeKey === "alerts" && unread > 0;
