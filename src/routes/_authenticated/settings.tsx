@@ -14,8 +14,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Coins } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currency";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Paisa" }] }),
@@ -26,6 +34,7 @@ function SettingsPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [name, setName] = useState("");
+  const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile"],
@@ -34,7 +43,7 @@ function SettingsPage() {
       if (!userData.user) throw new Error("Not signed in");
       const { data, error } = await supabase
         .from("profiles")
-        .select("id,name,created_at")
+        .select("id,name,currency,created_at")
         .eq("id", userData.user.id)
         .single();
       if (error) throw error;
@@ -44,7 +53,8 @@ function SettingsPage() {
 
   useEffect(() => {
     if (profile?.name) setName(profile.name);
-  }, [profile?.name]);
+    if (profile?.currency) setCurrency(profile.currency);
+  }, [profile?.name, profile?.currency]);
 
   const updateName = useMutation({
     mutationFn: async () => {
@@ -58,6 +68,24 @@ function SettingsPage() {
     onSuccess: () => {
       toast.success("Profile updated");
       qc.invalidateQueries({ queryKey: ["profile"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const updateCurrency = useMutation({
+    mutationFn: async (next: string) => {
+      if (!profile) throw new Error("No profile");
+      const { error } = await supabase
+        .from("profiles")
+        .update({ currency: next })
+        .eq("id", profile.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Currency updated");
+      // Invalidate anywhere money is shown so the new symbol propagates.
+      qc.invalidateQueries({ queryKey: ["profile"] });
+      qc.invalidateQueries({ queryKey: ["profile", "currency"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -113,6 +141,44 @@ function SettingsPage() {
               >
                 {updateName.isPending ? "Saving…" : "Save changes"}
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Coins className="h-5 w-5" /> Currency
+            </CardTitle>
+            <CardDescription>
+              All amounts across dashboards, budgets and reports use this currency.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="currency">Preferred currency</Label>
+              {isLoading ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Select
+                  value={currency}
+                  onValueChange={(next) => {
+                    setCurrency(next);
+                    updateCurrency.mutate(next);
+                  }}
+                >
+                  <SelectTrigger id="currency" aria-label="Preferred currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.symbol} &nbsp; {c.code} — {c.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </CardContent>
         </Card>

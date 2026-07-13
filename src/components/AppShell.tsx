@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AIChat } from "@/components/AIChat";
+import { useCurrency } from "@/hooks/use-currency";
 import type { ReactNode } from "react";
 
 const nav = [
@@ -87,6 +88,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 export function AppShell({ title, children }: { title: string; children: ReactNode }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { code: currencyCode, info: currencyInfo } = useCurrency();
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -160,8 +162,11 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
           </Sheet>
           <h1 className="font-display text-lg font-semibold tracking-tight">{title}</h1>
           <div className="ml-auto hidden items-center gap-2 sm:flex">
-            <span aria-label="Currency: Indian Rupee" className="rounded-full border border-border/70 bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-              ₹ INR
+            <span
+              aria-label={`Currency: ${currencyInfo.label}`}
+              className="rounded-full border border-border/70 bg-card px-3 py-1 text-xs font-medium text-muted-foreground"
+            >
+              {currencyInfo.symbol} {currencyCode}
             </span>
           </div>
         </header>
