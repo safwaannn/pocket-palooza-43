@@ -1,14 +1,17 @@
+import { formatMoney, DEFAULT_CURRENCY } from "@/lib/currency";
+
 /**
- * Formats a number as Indian Rupees (INR) currency
- * @param n - The number to format
- * @returns Formatted currency string (e.g., "₹1,00,000")
+ * Formats a number as Indian Rupees (INR) currency.
+ * @deprecated Prefer `useCurrency().format(n)` inside components so the user's chosen
+ * currency is respected. This helper is kept for backwards compatibility with utility
+ * modules that can't call React hooks.
  */
-export const formatINR = (n: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(n || 0);
+export const formatINR = (n: number) => formatMoney(n || 0, DEFAULT_CURRENCY);
+
+/**
+ * Currency-agnostic formatter. Accepts an ISO 4217 code (e.g. "USD"). Falls back to INR.
+ */
+export const formatCurrency = (n: number, code?: string | null) => formatMoney(n || 0, code);
 
 /**
  * Formats a number as a percentage string
