@@ -35,7 +35,8 @@ import {
 import { formatINR } from "@/lib/format";
 import { QuickAddButton, TransactionForm } from "@/components/TransactionForm";
 import { toast } from "sonner";
-import { FilterX, Pencil, Trash2 } from "lucide-react";
+import { Download, FilterX, Pencil, Trash2 } from "lucide-react";
+import { downloadCSV } from "@/lib/csv-export";
 
 export const Route = createFileRoute("/_authenticated/transactions")({
   head: () => ({ meta: [{ title: "Transactions - Paisa" }] }),
@@ -100,6 +101,23 @@ function TransactionsPage() {
     setSearch("");
   };
 
+  const exportCSV = () => {
+    if (!txns.length) {
+      toast.info("Nothing to export");
+      return;
+    }
+    const rows = txns.map((t) => ({
+      date: t.date,
+      type: t.type,
+      category: t.category?.name ?? "",
+      amount: t.amount,
+      note: t.note ?? "",
+    }));
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCSV(`paisa-transactions-${stamp}.csv`, rows);
+    toast.success(`Exported ${rows.length} transactions`);
+  };
+
   return (
     <AppShell title="Transactions">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -108,7 +126,19 @@ function TransactionsPage() {
             Search, filter, add, edit, and delete every money movement.
           </p>
         </div>
-        <QuickAddButton />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={exportCSV}
+            disabled={!txns.length}
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" aria-hidden="true" />
+            Export CSV
+          </Button>
+          <QuickAddButton />
+        </div>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
