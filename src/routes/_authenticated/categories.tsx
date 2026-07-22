@@ -41,6 +41,8 @@ import {
 } from "@/lib/finance-queries";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useUserRoles } from "@/hooks/use-is-admin";
+import { ReadOnlyNotice } from "@/components/ReadOnlyNotice";
 
 export const Route = createFileRoute("/_authenticated/categories")({
   head: () => ({ meta: [{ title: "Categories - Paisa" }] }),
@@ -49,6 +51,8 @@ export const Route = createFileRoute("/_authenticated/categories")({
 
 function CategoriesPage() {
   const qc = useQueryClient();
+  const { can } = useUserRoles();
+  const canWrite = can("categories:write");
   const { data: categories = [], isLoading } = useCategories();
   const [name, setName] = useState("");
   const [type, setType] = useState<TransactionType>("expense");
@@ -64,6 +68,7 @@ function CategoriesPage() {
 
   const add = useMutation({
     mutationFn: async () => {
+      if (!canWrite) throw new Error("Your role can view categories but cannot change them");
       const trimmedName = name.trim();
       if (hasDuplicate(trimmedName, type)) throw new Error("That category already exists");
 
@@ -95,6 +100,7 @@ function CategoriesPage() {
       categoryName: string;
       categoryType: TransactionType;
     }) => {
+      if (!canWrite) throw new Error("Your role can view categories but cannot change them");
       const trimmedName = categoryName.trim();
       if (hasDuplicate(trimmedName, categoryType, category.id)) {
         throw new Error("That category already exists");
@@ -116,6 +122,7 @@ function CategoriesPage() {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
+      if (!canWrite) throw new Error("Your role can view categories but cannot delete them");
       const { error } = await supabase.from("categories").delete().eq("id", id);
       if (error) throw error;
     },
@@ -133,63 +140,69 @@ function CategoriesPage() {
 
   return (
     <AppShell title="Categories">
+      {!canWrite && (
+        <ReadOnlyNotice description="You can review category setup, but creating, editing, and deleting categories are disabled." />
+      )}
+
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
         <SummaryCard label="Total categories" value={String(categories.length)} />
         <SummaryCard label="Income categories" value={String(incomeCount)} />
         <SummaryCard label="Expense categories" value={String(expenseCount)} />
       </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Add custom category</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form
-            className="flex flex-col gap-3 md:flex-row"
-            aria-label="Add custom category"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (!name.trim()) return toast.error("Enter a name");
-              add.mutate();
-            }}
-          >
-            <div className="flex-1 space-y-2">
-              <Label htmlFor="category-name">Name</Label>
-              <Input
-                id="category-name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                maxLength={50}
-                placeholder="Groceries, Rent, Bonus"
-                required
-                aria-required="true"
-                aria-describedby="category-name-help"
-              />
-              <p id="category-name-help" className="text-xs text-muted-foreground">
-                Up to 50 characters. Must be unique within its type.
-              </p>
-            </div>
-            <div className="space-y-2 md:w-44">
-              <Label htmlFor="category-type">Type</Label>
-              <Select value={type} onValueChange={(value) => setType(value as TransactionType)}>
-                <SelectTrigger id="category-type" aria-describedby="category-type-help">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="expense">Expense</SelectItem>
-                  <SelectItem value="income">Income</SelectItem>
-                </SelectContent>
-              </Select>
-              <p id="category-type-help" className="text-xs text-muted-foreground">
-                Determines which transaction form shows this category.
-              </p>
-            </div>
-            <Button type="submit" className="md:self-end" disabled={add.isPending}>
-              <Plus className="h-4 w-4" aria-hidden="true" /> Add
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {canWrite && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Add custom category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              className="flex flex-col gap-3 md:flex-row"
+              aria-label="Add custom category"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!name.trim()) return toast.error("Enter a name");
+                add.mutate();
+              }}
+            >
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="category-name">Name</Label>
+                <Input
+                  id="category-name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  maxLength={50}
+                  placeholder="Groceries, Rent, Bonus"
+                  required
+                  aria-required="true"
+                  aria-describedby="category-name-help"
+                />
+                <p id="category-name-help" className="text-xs text-muted-foreground">
+                  Up to 50 characters. Must be unique within its type.
+                </p>
+              </div>
+              <div className="space-y-2 md:w-44">
+                <Label htmlFor="category-type">Type</Label>
+                <Select value={type} onValueChange={(value) => setType(value as TransactionType)}>
+                  <SelectTrigger id="category-type" aria-describedby="category-type-help">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="expense">Expense</SelectItem>
+                    <SelectItem value="income">Income</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p id="category-type-help" className="text-xs text-muted-foreground">
+                  Determines which transaction form shows this category.
+                </p>
+              </div>
+              <Button type="submit" className="md:self-end" disabled={add.isPending}>
+                <Plus className="h-4 w-4" aria-hidden="true" /> Add
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
@@ -206,38 +219,40 @@ function CategoriesPage() {
                 {custom.map((category) => (
                   <div key={category.id} className="flex items-center justify-between gap-3 py-3">
                     <CategoryLabel category={category} />
-                    <div className="flex shrink-0 gap-1">
-                      <Button size="icon" variant="ghost" onClick={() => setEditing(category)}>
-                        <Pencil className="h-4 w-4" />
-                        <span className="sr-only">Edit {category.name}</span>
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button size="icon" variant="ghost">
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete {category.name}</span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete {category.name}?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Existing transactions will keep their amounts but lose this category.
-                              Any budget for this category will also be removed.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              onClick={() => del.mutate(category.id)}
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                    {canWrite && (
+                      <div className="flex shrink-0 gap-1">
+                        <Button size="icon" variant="ghost" onClick={() => setEditing(category)}>
+                          <Pencil className="h-4 w-4" />
+                          <span className="sr-only">Edit {category.name}</span>
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="icon" variant="ghost">
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Delete {category.name}</span>
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete {category.name}?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Existing transactions will keep their amounts but lose this category.
+                                Any budget for this category will also be removed.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={() => del.mutate(category.id)}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
