@@ -42,7 +42,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CalendarClock, Pause, Play, Plus, Trash2 } from "lucide-react";
+import { CalendarClock, Lock, Pause, Play, Plus, Trash2 } from "lucide-react";
 
 import { useCategories, type TransactionType } from "@/lib/finance-queries";
 import {
@@ -54,6 +54,8 @@ import {
 } from "@/lib/recurring-queries";
 import { useCurrency } from "@/hooks/use-currency";
 import { formatDate, today } from "@/lib/format";
+import { useUserRoles } from "@/hooks/use-is-admin";
+import { ReadOnlyNotice } from "@/components/ReadOnlyNotice";
 
 export const Route = createFileRoute("/_authenticated/recurring")({
   head: () => ({ meta: [{ title: "Recurring — Paisa" }] }),
@@ -63,11 +65,14 @@ export const Route = createFileRoute("/_authenticated/recurring")({
 function RecurringPage() {
   const qc = useQueryClient();
   const { format } = useCurrency();
+  const { can } = useUserRoles();
+  const canWrite = can("recurring:write");
   const { data: recurring = [], isLoading } = useRecurringTransactions();
   const [open, setOpen] = useState(false);
 
   const toggleActive = useMutation({
     mutationFn: async ({ id, next }: { id: string; next: boolean }) => {
+      if (!canWrite) throw new Error("Your role can view schedules but cannot change them");
       const { error } = await supabase
         .from("recurring_transactions")
         .update({ active: next })
@@ -80,6 +85,7 @@ function RecurringPage() {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
+      if (!canWrite) throw new Error("Your role can view schedules but cannot delete them");
       const { error } = await supabase.from("recurring_transactions").delete().eq("id", id);
       if (error) throw error;
     },
@@ -110,20 +116,30 @@ function RecurringPage() {
 
   return (
     <AppShell title="Recurring">
+      {!canWrite && (
+        <ReadOnlyNotice description="You can review recurring income and bills, but creating, pausing, and deleting schedules are disabled." />
+      )}
+
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm text-muted-foreground">
             Schedules that auto-post transactions on their due date (rent, subscriptions, salary…).
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" /> New schedule
-            </Button>
-          </DialogTrigger>
-          <RecurringDialog onClose={() => setOpen(false)} />
-        </Dialog>
+        {canWrite ? (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" /> New schedule
+              </Button>
+            </DialogTrigger>
+            <RecurringDialog onClose={() => setOpen(false)} />
+          </Dialog>
+        ) : (
+          <Button disabled variant="outline" className="gap-2">
+            <Lock className="h-4 w-4" /> New schedule
+          </Button>
+        )}
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -201,42 +217,46 @@ function RecurringPage() {
                       {r.type === "income" ? "+" : "-"}
                       {format(r.amount)}
                     </div>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => toggleActive.mutate({ id: r.id, next: !r.active })}
-                      aria-label={r.active ? "Pause schedule" : "Resume schedule"}
-                    >
-                      {r.active ? (
-                        <Pause className="h-4 w-4" />
-                      ) : (
-                        <Play className="h-4 w-4" />
-                      )}
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button size="icon" variant="ghost" aria-label="Delete schedule">
-                          <Trash2 className="h-4 w-4" />
+                    {canWrite && (
+                      <>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => toggleActive.mutate({ id: r.id, next: !r.active })}
+                          aria-label={r.active ? "Pause schedule" : "Resume schedule"}
+                        >
+                          {r.active ? (
+                            <Pause className="h-4 w-4" />
+                          ) : (
+                            <Play className="h-4 w-4" />
+                          )}
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete this schedule?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            The template will be removed but past transactions it created stay put.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            onClick={() => del.mutate(r.id)}
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="icon" variant="ghost" aria-label="Delete schedule">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete this schedule?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                The template will be removed but past transactions it created stay put.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={() => del.mutate(r.id)}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
