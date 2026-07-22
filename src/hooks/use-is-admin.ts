@@ -1,28 +1,49 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/supabase/client";
+import {
+  hasPermission,
+  normalizeRoles,
+  primaryRole,
+  type AppRole,
+  type Permission,
+} from "@/lib/rbac";
 
 /**
- * Returns whether the current signed-in user has the `admin` role.
- * The check hits the `user_roles` table under RLS (users can read their own row), so it works
- * without exposing service-role credentials to the browser.
- * Cached for 60 s so nav badges and guards don't storm the DB.
+ * Reads all roles for the signed-in user. The `user_roles` table is RLS-protected:
+ * users can read their own roles, while admins can read everyone from the admin page.
  */
-export function useIsAdmin(): { isAdmin: boolean; isLoading: boolean } {
+export function useUserRoles(): {
+  roles: AppRole[];
+  primaryRole: AppRole;
+  isLoading: boolean;
+  can: (permission: Permission) => boolean;
+} {
   const { data, isLoading } = useQuery({
-    queryKey: ["user-role", "is-admin"],
+    queryKey: ["user-roles", "current"],
     staleTime: 60 * 1000,
-    queryFn: async (): Promise<boolean> => {
+    queryFn: async (): Promise<AppRole[]> => {
       const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) return false;
+      if (!userData.user) return ["viewer"];
       const { data: rows, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", userData.user.id)
-        .eq("role", "admin")
-        .limit(1);
-      if (error) return false;
-      return (rows ?? []).length > 0;
+        .eq("user_id", userData.user.id);
+      if (error) return ["viewer"];
+      return normalizeRoles((rows ?? []).map((row) => row.role));
     },
   });
-  return { isAdmin: data ?? false, isLoading };
+
+  const roles = data ?? ["viewer"];
+
+  return {
+    roles,
+    primaryRole: primaryRole(roles),
+    isLoading,
+    can: (permission) => hasPermission(roles, permission),
+  };
+}
+
+export function useIsAdmin(): { isAdmin: boolean; isLoading: boolean } {
+  const { can, isLoading } = useUserRoles();
+  return { isAdmin: can("admin:access"), isLoading };
 }
