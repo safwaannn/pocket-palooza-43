@@ -38,6 +38,8 @@ import { currentMonthYear, monthYearLabel } from "@/lib/format";
 import { useCurrency } from "@/hooks/use-currency";
 import { toast } from "sonner";
 import { AlertTriangle, Trash2 } from "lucide-react";
+import { useUserRoles } from "@/hooks/use-is-admin";
+import { ReadOnlyNotice } from "@/components/ReadOnlyNotice";
 
 export const Route = createFileRoute("/_authenticated/budgets")({
   head: () => ({ meta: [{ title: "Budgets - Paisa" }] }),
@@ -47,6 +49,8 @@ export const Route = createFileRoute("/_authenticated/budgets")({
 function BudgetsPage() {
   const qc = useQueryClient();
   const { format } = useCurrency();
+  const { can } = useUserRoles();
+  const canWrite = can("budgets:write");
   const [monthYear, setMonthYear] = useState(currentMonthYear());
   const { data: categories = [] } = useCategories();
   const { data: budgets = [], isLoading } = useBudgets(monthYear);
@@ -91,6 +95,7 @@ function BudgetsPage() {
 
   const upsert = useMutation({
     mutationFn: async () => {
+      if (!canWrite) throw new Error("Your role can view budgets but cannot change them");
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not signed in");
 
@@ -115,6 +120,7 @@ function BudgetsPage() {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
+      if (!canWrite) throw new Error("Your role can view budgets but cannot remove them");
       const { error } = await supabase.from("budgets").delete().eq("id", id);
       if (error) throw error;
     },
@@ -127,6 +133,10 @@ function BudgetsPage() {
 
   return (
     <AppShell title="Budgets">
+      {!canWrite && (
+        <ReadOnlyNotice description="You can monitor limits and progress, but setting or removing budgets is disabled." />
+      )}
+
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-2">
           <Label htmlFor="budget-month" className="eyebrow">
@@ -181,67 +191,69 @@ function BudgetsPage() {
         />
       </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Set monthly limit</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form
-            className="flex flex-col gap-3 md:flex-row"
-            aria-label="Set monthly budget limit"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (!categoryId) return toast.error("Pick a category");
-              if (!limit || Number(limit) <= 0) return toast.error("Enter a valid limit");
-              upsert.mutate();
-            }}
-          >
-            <div className="flex-1 space-y-2">
-              <Label htmlFor="budget-category">Category</Label>
-              <Select value={categoryId} onValueChange={setCategoryId}>
-                <SelectTrigger
-                  id="budget-category"
+      {canWrite && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Set monthly limit</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              className="flex flex-col gap-3 md:flex-row"
+              aria-label="Set monthly budget limit"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!categoryId) return toast.error("Pick a category");
+                if (!limit || Number(limit) <= 0) return toast.error("Enter a valid limit");
+                upsert.mutate();
+              }}
+            >
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="budget-category">Category</Label>
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger
+                    id="budget-category"
+                    aria-required="true"
+                    aria-describedby="budget-category-help"
+                  >
+                    <SelectValue placeholder="Select expense category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {expenseCats.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p id="budget-category-help" className="text-xs text-muted-foreground">
+                  Only expense categories can have budgets.
+                </p>
+              </div>
+              <div className="space-y-2 md:w-52">
+                <Label htmlFor="budget-limit">Monthly limit (INR)</Label>
+                <Input
+                  id="budget-limit"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={limit}
+                  onChange={(event) => setLimit(event.target.value)}
+                  required
                   aria-required="true"
-                  aria-describedby="budget-category-help"
-                >
-                  <SelectValue placeholder="Select expense category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {expenseCats.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p id="budget-category-help" className="text-xs text-muted-foreground">
-                Only expense categories can have budgets.
-              </p>
-            </div>
-            <div className="space-y-2 md:w-52">
-              <Label htmlFor="budget-limit">Monthly limit (INR)</Label>
-              <Input
-                id="budget-limit"
-                type="number"
-                min="0"
-                step="1"
-                value={limit}
-                onChange={(event) => setLimit(event.target.value)}
-                required
-                aria-required="true"
-                aria-describedby="budget-limit-help"
-                inputMode="numeric"
-              />
-              <p id="budget-limit-help" className="text-xs text-muted-foreground">
-                Alerts fire at 80% and 100% of this limit.
-              </p>
-            </div>
-            <Button type="submit" className="md:self-end" disabled={upsert.isPending}>
-              {upsert.isPending ? "Saving..." : existingBudget ? "Update budget" : "Save budget"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+                  aria-describedby="budget-limit-help"
+                  inputMode="numeric"
+                />
+                <p id="budget-limit-help" className="text-xs text-muted-foreground">
+                  Alerts fire at 80% and 100% of this limit.
+                </p>
+              </div>
+              <Button type="submit" className="md:self-end" disabled={upsert.isPending}>
+                {upsert.isPending ? "Saving..." : existingBudget ? "Update budget" : "Save budget"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
@@ -279,32 +291,34 @@ function BudgetsPage() {
                       {format(budget.used)} / {format(budget.limit_amount)} (
                       {Math.round(budget.pct)}%)
                     </span>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button size="icon" variant="ghost">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Remove {budget.name} budget</span>
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Remove budget?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This removes the monthly limit for {budget.name}. Transactions are not
-                            deleted.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            onClick={() => del.mutate(budget.id)}
-                          >
-                            Remove
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    {canWrite && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon" variant="ghost">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Remove {budget.name} budget</span>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Remove budget?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This removes the monthly limit for {budget.name}. Transactions are not
+                              deleted.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() => del.mutate(budget.id)}
+                            >
+                              Remove
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </div>
                 </div>
                 <Progress

@@ -16,6 +16,8 @@ import { toast } from "sonner";
 import { AlertTriangle, BellRing, Check, CheckCheck } from "lucide-react";
 import { monthYearLabel } from "@/lib/format";
 import { CardSkeleton } from "@/components/Skeletons";
+import { useUserRoles } from "@/hooks/use-is-admin";
+import { ReadOnlyNotice } from "@/components/ReadOnlyNotice";
 
 export const Route = createFileRoute("/_authenticated/alerts")({
   head: () => ({ meta: [{ title: "Alerts — Paisa" }] }),
@@ -34,6 +36,8 @@ type AlertRow = {
 
 function AlertsPage() {
   const qc = useQueryClient();
+  const { can } = useUserRoles();
+  const canAcknowledge = can("budgets:write");
 
   const { data: alerts = [], isLoading } = useQuery({
     queryKey: ["budget-alerts"],
@@ -49,6 +53,7 @@ function AlertsPage() {
 
   const ackOne = useMutation({
     mutationFn: async (id: string) => {
+      if (!canAcknowledge) throw new Error("Your role can view alerts but cannot mark them read");
       const { error } = await supabase
         .from("budget_alerts")
         .update({ acknowledged: true })
@@ -60,6 +65,7 @@ function AlertsPage() {
 
   const ackAll = useMutation({
     mutationFn: async () => {
+      if (!canAcknowledge) throw new Error("Your role can view alerts but cannot mark them read");
       const ids = alerts.filter((a) => !a.acknowledged).map((a) => a.id);
       if (!ids.length) return;
       const { error } = await supabase
@@ -88,6 +94,10 @@ function AlertsPage() {
 
   return (
     <AppShell title="Alerts">
+      {!canAcknowledge && (
+        <ReadOnlyNotice description="You can review budget alerts, but marking alerts as read is disabled." />
+      )}
+
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm text-muted-foreground">
@@ -99,7 +109,7 @@ function AlertsPage() {
             </p>
           )}
         </div>
-        {unread > 0 && (
+        {unread > 0 && canAcknowledge && (
           <Button variant="outline" onClick={() => ackAll.mutate()} className="gap-2">
             <CheckCheck className="h-4 w-4" /> Mark all read
           </Button>
@@ -170,7 +180,7 @@ function AlertsPage() {
                           </div>
                         </div>
                       </div>
-                      {!alert.acknowledged && (
+                      {!alert.acknowledged && canAcknowledge && (
                         <Button
                           size="sm"
                           variant="ghost"
