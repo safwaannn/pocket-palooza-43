@@ -261,13 +261,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_read_own_finance: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      can_write_own_finance: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      has_any_role: {
+        Args: { _user_id: string; _roles: string[] }
+        Returns: boolean
+      }
       has_role: {
         Args: { _user_id: string; _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "manager" | "user" | "viewer"
       transaction_type: "income" | "expense"
     }
     CompositeTypes: {
@@ -396,7 +408,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "manager", "user", "viewer"],
       transaction_type: ["income", "expense"],
     },
   },
