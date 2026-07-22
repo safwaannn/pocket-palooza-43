@@ -28,7 +28,8 @@ import {
   type TransactionType,
 } from "@/lib/finance-queries";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Lock, Plus } from "lucide-react";
+import { useUserRoles } from "@/hooks/use-is-admin";
 
 type Props = {
   trigger?: ReactNode;
@@ -41,6 +42,8 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 export function TransactionForm({ trigger, initial, open, onOpenChange }: Props) {
   const qc = useQueryClient();
+  const { can } = useUserRoles();
+  const canWrite = can("transactions:write");
   const { data: categories = [] } = useCategories();
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = open !== undefined;
@@ -69,6 +72,7 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
 
   const mutation = useMutation({
     mutationFn: async () => {
+      if (!canWrite) throw new Error("Your role can view transactions but cannot change them");
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not signed in");
 
@@ -247,6 +251,17 @@ export function TransactionForm({ trigger, initial, open, onOpenChange }: Props)
 }
 
 export function QuickAddButton() {
+  const { can } = useUserRoles();
+  const canWrite = can("transactions:write");
+
+  if (!canWrite) {
+    return (
+      <Button disabled variant="outline" title="Your role is read-only">
+        <Lock className="h-4 w-4" /> Read-only
+      </Button>
+    );
+  }
+
   return (
     <TransactionForm
       trigger={

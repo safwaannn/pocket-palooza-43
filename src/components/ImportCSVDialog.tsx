@@ -24,6 +24,7 @@ import {
   parseTransactionsCSV,
   type ParsedTransaction,
 } from "@/lib/csv-import";
+import { useUserRoles } from "@/hooks/use-is-admin";
 
 type PreviewState =
   | { status: "idle" }
@@ -39,6 +40,8 @@ const buildCategoryIndex = (categories: Category[]) => {
 
 export function ImportCSVDialog({ trigger }: { trigger: React.ReactNode }) {
   const qc = useQueryClient();
+  const { can } = useUserRoles();
+  const canImport = can("transactions:write");
   const { data: categories = [] } = useCategories();
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState<PreviewState>({ status: "idle" });
@@ -67,6 +70,7 @@ export function ImportCSVDialog({ trigger }: { trigger: React.ReactNode }) {
 
   const importMut = useMutation({
     mutationFn: async () => {
+      if (!canImport) throw new Error("Your role cannot import transactions");
       if (preview.status !== "parsed") throw new Error("No file parsed");
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not signed in");

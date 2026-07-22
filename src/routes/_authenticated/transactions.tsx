@@ -35,9 +35,11 @@ import {
 import { useCurrency } from "@/hooks/use-currency";
 import { QuickAddButton, TransactionForm } from "@/components/TransactionForm";
 import { toast } from "sonner";
-import { Download, FilterX, Pencil, Trash2, Upload } from "lucide-react";
+import { Download, FilterX, Lock, Pencil, Trash2, Upload } from "lucide-react";
 import { downloadCSV } from "@/lib/csv-export";
 import { ImportCSVDialog } from "@/components/ImportCSVDialog";
+import { useUserRoles } from "@/hooks/use-is-admin";
+import { ReadOnlyNotice } from "@/components/ReadOnlyNotice";
 
 export const Route = createFileRoute("/_authenticated/transactions")({
   head: () => ({ meta: [{ title: "Transactions - Paisa" }] }),
@@ -47,6 +49,9 @@ export const Route = createFileRoute("/_authenticated/transactions")({
 function TransactionsPage() {
   const qc = useQueryClient();
   const { format } = useCurrency();
+  const { can } = useUserRoles();
+  const canWrite = can("transactions:write");
+  const canExport = can("transactions:export");
   const { data: categories = [] } = useCategories();
   const [type, setType] = useState<"all" | "income" | "expense">("all");
   const [categoryId, setCategoryId] = useState("all");
@@ -104,6 +109,10 @@ function TransactionsPage() {
   };
 
   const exportCSV = () => {
+    if (!canExport) {
+      toast.error("Your role cannot export transactions");
+      return;
+    }
     if (!txns.length) {
       toast.info("Nothing to export");
       return;
@@ -122,6 +131,10 @@ function TransactionsPage() {
 
   return (
     <AppShell title="Transactions">
+      {!canWrite && (
+        <ReadOnlyNotice description="You can search and review transactions, but importing, editing, and deleting are disabled." />
+      )}
+
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm text-muted-foreground">
@@ -129,19 +142,26 @@ function TransactionsPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <ImportCSVDialog
-            trigger={
-              <Button type="button" variant="outline" className="gap-2">
-                <Upload className="h-4 w-4" aria-hidden="true" />
-                Import CSV
-              </Button>
-            }
-          />
+          {canWrite ? (
+            <ImportCSVDialog
+              trigger={
+                <Button type="button" variant="outline" className="gap-2">
+                  <Upload className="h-4 w-4" aria-hidden="true" />
+                  Import CSV
+                </Button>
+              }
+            />
+          ) : (
+            <Button type="button" variant="outline" disabled className="gap-2">
+              <Lock className="h-4 w-4" aria-hidden="true" />
+              Import CSV
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"
             onClick={exportCSV}
-            disabled={!txns.length}
+            disabled={!txns.length || !canExport}
             className="gap-2"
           >
             <Download className="h-4 w-4" aria-hidden="true" />
@@ -295,6 +315,7 @@ function TransactionsPage() {
                 <TransactionRow
                   key={transaction.id}
                   transaction={transaction}
+                  canWrite={canWrite}
                   onEdit={() => setEditing(transaction)}
                   onDelete={() => del.mutate(transaction.id)}
                 />
@@ -345,10 +366,12 @@ function TransactionRow({
   transaction,
   onEdit,
   onDelete,
+  canWrite,
 }: {
   transaction: Transaction;
   onEdit: () => void;
   onDelete: () => void;
+  canWrite: boolean;
 }) {
   const { format } = useCurrency();
   const isIncome = transaction.type === "income";
@@ -383,37 +406,39 @@ function TransactionRow({
           {isIncome ? "+" : "-"}
           {format(transaction.amount)}
         </div>
-        <div className="flex gap-1">
-          <Button size="icon" variant="ghost" onClick={onEdit}>
-            <Pencil className="h-4 w-4" />
-            <span className="sr-only">Edit transaction</span>
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button size="icon" variant="ghost">
-                <Trash2 className="h-4 w-4" />
-                <span className="sr-only">Delete transaction</span>
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete transaction?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This removes the transaction from totals, budgets, and reports.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={onDelete}
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+        {canWrite && (
+          <div className="flex gap-1">
+            <Button size="icon" variant="ghost" onClick={onEdit}>
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">Edit transaction</span>
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="icon" variant="ghost">
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Delete transaction</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete transaction?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This removes the transaction from totals, budgets, and reports.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={onDelete}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
       </div>
     </div>
   );
