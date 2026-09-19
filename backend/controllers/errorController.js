@@ -80,3 +80,36 @@ const sendErrorProd = (err, req, res) => {
     message: 'Something went very wrong. Please try again later.',
   });
 };
+
+
+/* ═══════════════════════ PART 3 — THE HANDLER ══════════════════════════ */
+module.exports = (err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
+  if (process.env.NODE_ENV === 'production') {
+    // Copy correctly: spreading an Error drops name/message/stack (they are
+    // non-enumerable), which would make every translator below fail. Preserve
+    // the prototype so it is still a real Error, then copy the hidden fields.
+    let error = Object.create(Object.getPrototypeOf(err));
+    Object.assign(error, err);
+    error.name = err.name;
+    error.message = err.message;
+    error.statusCode = err.statusCode;
+    error.status = err.status;
+    error.isOperational = err.isOperational;
+
+    if (error.name === 'CastError') error = handleCastErrorDB(error);
+    if (error.code === 11000) error = handleDuplicateFieldsDB(error);
+    if (error.name === 'ValidationError')
+      error = handleValidationErrorDB(error);
+    if (error.name === 'JsonWebTokenError') error = handleJWTError();
+    if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
+
+    return sendErrorProd(error, req, res);
+  }
+
+  // Development is the default — safer to over-share locally than to hide a
+  // stack trace because NODE_ENV was misspelled.
+  return sendErrorDev(err, req, res);
+};
