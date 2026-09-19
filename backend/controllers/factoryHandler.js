@@ -87,3 +87,22 @@ exports.createOne = (Model, { userScoped = false } = {}) =>
     const doc = await Model.create(payload);
     res.status(201).json({ status: 'success', data: doc });
   });
+
+
+/**
+ * GET ONE. Optional `popOptions` chains a `.populate()`. Owner-scoped by query.
+ */
+exports.getOne = (Model, { userScoped = false, popOptions } = {}) =>
+  catchAsync(async (req, res, next) => {
+    let query = Model.findOne({
+      _id: req.params.id,
+      ...ownerFilter(req, userScoped),
+    });
+    if (popOptions) query = query.populate(popOptions);
+
+    const doc = await query;
+    if (!doc) {
+      return next(new AppError('No document found with that ID', 404));
+    }
+    res.status(200).json({ status: 'success', data: doc });
+  });
