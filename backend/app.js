@@ -173,4 +173,15 @@ app.get('/api/v1/health', (req, res) => {
   res.status(200).json({ status: 'success', time: req.requestTime });
 });
 
+/* ══════════════════════ 3. 404 — UNMATCHED ROUTES ═══════════════════════ */
+// Anything reaching here matched no route above. Must come AFTER all routes.
+app.all('/{*splat}', (req, res, next) => {
+  next(new AppError(`Cannot find ${req.originalUrl} on this server`, 404));
+});
+
+/* ═════════════════════ 4. GLOBAL ERROR HANDLER ══════════════════════════ */
+// The LAST app.use — Express only routes errors to a handler registered AFTER
+// the code that produced them.
+app.use(globalErrorHandler);
+
 module.exports = app;
