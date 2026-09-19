@@ -70,3 +70,20 @@ exports.updateOne = (Model, { userScoped = false } = {}) =>
     }
     res.status(200).json({ status: 'success', data: doc });
   });
+
+
+/**
+ * CREATE ONE (POST) — 201 Created.
+ * When userScoped we stamp `user: req.user.id` from the TOKEN, never from the
+ * body — so a client can't create a row attributed to someone else. Any
+ * client-supplied `user` in the body is overwritten.
+ */
+exports.createOne = (Model, { userScoped = false } = {}) =>
+  catchAsync(async (req, res, next) => {
+    const payload = userScoped
+      ? { ...req.body, user: req.user.id }
+      : req.body;
+
+    const doc = await Model.create(payload);
+    res.status(201).json({ status: 'success', data: doc });
+  });
