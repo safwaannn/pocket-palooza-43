@@ -47,6 +47,16 @@ const budgetSchema = new mongoose.Schema(
   },
 );
 
+// One budget per (user, category, month). Also the index that makes the
+// "budgets for this month" query fast.
+budgetSchema.index({ user: 1, category: 1, month_year: 1 }, { unique: true });
+
+// Populate the category name/type on read so the UI can label each budget.
+// Mongoose 9: param-less hook (no `next`).
+budgetSchema.pre(/^find/, function () {
+  this.populate({ path: 'category', select: 'name type' });
+});
+
 const Budget = mongoose.model('Budget', budgetSchema);
 
 module.exports = Budget;
