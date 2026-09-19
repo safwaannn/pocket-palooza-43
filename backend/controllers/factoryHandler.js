@@ -106,3 +106,37 @@ exports.getOne = (Model, { userScoped = false, popOptions } = {}) =>
     }
     res.status(200).json({ status: 'success', data: doc });
   });
+
+
+/**
+ * GET ALL. The APIFeatures chain (filter/sort/limitFields/paginate) all comes
+ * from the URL; the DB is hit once at the await. The base filter starts from the
+ * owner scope, so a user's list can never include another user's rows.
+ *
+ * `results` is the count of THIS PAGE, not the grand total (a total would cost a
+ * second countDocuments() query on every request — add it only if the UI needs
+ * "page 3 of 12").
+ */
+exports.getAll = (Model, { userScoped = false, popOptions } = {}) =>
+  catchAsync(async (req, res, next) => {
+    const features = new APIFeatures(
+      Model.find(ownerFilter(req, userScoped)),
+      req.query,
+    )
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+
+    if (popOptions) features.query = features.query.populate(popOptions);
+
+    const doc = await features.query;
+
+    res.status(200).json({
+      status: 'success',
+      results: doc.length,
+      page: features.page,
+      limit: features.limit,
+      data: doc,
+    });
+  });
