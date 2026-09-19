@@ -82,6 +82,21 @@ class APIFeatures {
     }
     return this;
   }
+
+  /**
+   * FIELD LIMITING / PROJECTION — ?fields=amount,date
+   * The default strips `__v`, Mongoose's internal version key, which is useless
+   * to API clients.
+   */
+  limitFields() {
+    if (this.queryString.fields) {
+      const fields = this.queryString.fields.split(',').join(' ');
+      this.query = this.query.select(fields);
+    } else {
+      this.query = this.query.select('-__v');
+    }
+    return this;
+  }
 }
 
 module.exports = APIFeatures;
