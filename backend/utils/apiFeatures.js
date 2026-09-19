@@ -97,6 +97,29 @@ class APIFeatures {
     }
     return this;
   }
+
+  /**
+   * PAGINATION — ?page=2&limit=20
+   *
+   * Clamped: max 100 per page (a `?limit=999999` would otherwise try to load
+   * the whole collection into memory — a cheap DoS), min page 1, floored to
+   * integers. `(page - 1) * limit` — the parentheses matter: without them
+   * operator precedence computes `page - (1 * limit)`.
+   */
+  paginate() {
+    const MAX_LIMIT = 100;
+    const page = Math.max(1, Math.floor(this.queryString.page * 1) || 1);
+    const limit = Math.min(
+      MAX_LIMIT,
+      Math.max(1, Math.floor(this.queryString.limit * 1) || 100),
+    );
+    const skip = (page - 1) * limit;
+
+    this.query = this.query.skip(skip).limit(limit);
+    this.page = page;
+    this.limit = limit;
+    return this;
+  }
 }
 
 module.exports = APIFeatures;
