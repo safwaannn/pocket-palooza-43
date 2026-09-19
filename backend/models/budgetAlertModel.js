@@ -60,6 +60,18 @@ const budgetAlertSchema = new mongoose.Schema(
   },
 );
 
+// Each (user, category, month, threshold) alert exists at most once.
+budgetAlertSchema.index(
+  { user: 1, category: 1, month_year: 1, threshold: 1 },
+  { unique: true },
+);
+
+// Populate the category name so alerts can be labelled without a second call.
+// Mongoose 9: param-less hook (no `next`).
+budgetAlertSchema.pre(/^find/, function () {
+  this.populate({ path: 'category', select: 'name type' });
+});
+
 const BudgetAlert = mongoose.model('BudgetAlert', budgetAlertSchema);
 
 module.exports = BudgetAlert;
