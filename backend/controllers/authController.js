@@ -168,3 +168,107 @@ exports.restrictTo =
     }
     next();
   };
+
+
+/**
+ * FORGOT PASSWORD — email a one-time reset link. We store only the HASH of the
+ * token; the plain token goes in the email. The try/catch is the point: we have
+ * already saved the token, so if the email fails we must roll it back, or the
+ * user has a live token they never received.
+ */
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('There is no user with that email address', 404));
+  }
+
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  // Point at the FRONT-END reset page (not the raw API endpoint). The page
+  // reads the token from the query string and PATCHes the API for the user.
+  // Falls back to the request origin if CLIENT_ORIGIN is not configured.
+  const clientOrigin = (process.env.CLIENT_ORIGIN || `${req.protocol}://${req.get('host')}`).replace(
+    /\/$/,
+    '',
+  );
+  const resetURL = `${clientOrigin}/reset-password?token=${resetToken}`;
+
+  const message = `Forgot your password? Open the link below to choose a new one:\n\n${resetURL}\n\nThis link is valid for 10 minutes.\nIf you didn't request a password reset, please ignore this email — your password will stay the same.`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Your password reset token (valid for 10 min)',
+      message,
+    });
+
+    res.status(200).json({ status: 'success', message: 'Token sent to email!' });
+  } catch (err) {
+    // ROLLBACK — the email failed, so the token must not remain usable.
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    console.error('📧 Email sending failed:', err.message);
+    return next(
+      new AppError('There was an error sending the email. Try again later!', 500),
+    );
+  }
+});
+
+/**
+ * RESET PASSWORD — the user PATCHes { password, passwordConfirm } to
+ * /resetPassword/:token. We hash the incoming plain token and look up THAT, so
+ * a leaked DB contains no usable tokens. The expiry check is folded into the
+ * query. We use `.save()` (never findByIdAndUpdate) so hashing and validation
+ * hooks run, then log the user in.
+ */
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(new AppError('Token is invalid or has expired', 400));
+  }
+
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  createSendToken(user, 200, res);
+});
+
+/**
+ * UPDATE PASSWORD (logged-in user). Requires the CURRENT password even though
+ * they are logged in — a token alone (borrowed laptop, stolen cookie) should not
+ * be enough to lock the true owner out. Guard that passwordCurrent is present,
+ * use `.save()` so hooks run, and issue a fresh token at the end (the
+ * passwordChangedAt hook just invalidated the old one).
+ */
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  if (!req.body.passwordCurrent) {
+    return next(new AppError('Please provide your current password', 400));
+  }
+
+  const user = await User.findById(req.user.id).select('+password');
+
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    return next(new AppError('Your current password is incorrect', 401));
+  }
+
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save();
+
+  createSendToken(user, 200, res);
+});
