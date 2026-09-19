@@ -50,3 +50,33 @@ const handleJWTError = () =>
 
 const handleJWTExpiredError = () =>
   new AppError('Your token has expired. Please log in again.', 401);
+
+
+/* ═══ PART 2 — SENDERS: dev gets everything, prod gets only what's safe ═══ */
+
+const sendErrorDev = (err, req, res) => {
+  res.status(err.statusCode).json({
+    status: err.status,
+    error: err,
+    message: err.message,
+    stack: err.stack,
+  });
+};
+
+const sendErrorProd = (err, req, res) => {
+  // isOperational === true → an error WE created with AppError. Safe to send.
+  if (err.isOperational) {
+    return res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message,
+    });
+  }
+  // An unexpected bug or unrecognised library error. Log the full thing
+  // server-side (this is where you'd report to Sentry/Datadog), send a generic
+  // message to the client so we don't leak internals.
+  console.error('💥 UNEXPECTED ERROR:', err);
+  return res.status(500).json({
+    status: 'error',
+    message: 'Something went very wrong. Please try again later.',
+  });
+};
