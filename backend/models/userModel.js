@@ -95,6 +95,32 @@ const userSchema = new mongoose.Schema(
   },
 );
 
+/* ══════════════════════════════ MIDDLEWARE ══════════════════════════════ */
+
+// HASH THE PASSWORD BEFORE SAVING. bcrypt is deliberately slow and salts
+// automatically. The `isModified` guard stops us re-hashing an already-hashed
+// password on unrelated saves (e.g. flipping `active`).
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined; // needed only for validation; never persisted
+});
+
+// RECORD WHEN THE PASSWORD CHANGED (for "log out everywhere"). Skip on signup
+// (`isNew`). Backdate 1s so the change can't appear later than the fresh token's
+// issued-at time, which would immediately invalidate that token.
+userSchema.pre('save', async function () {
+  if (!this.isModified('password') || this.isNew) return;
+  this.passwordChangedAt = Date.now() - 1000;
+});
+
+// HIDE DEACTIVATED USERS FROM EVERY QUERY (soft delete). `$ne: false` also
+// matches users created before this field existed. Mongoose 9: hooks take no
+// `next` — a param-less hook is treated as synchronous.
+userSchema.pre(/^find/, function () {
+  this.find({ active: { $ne: false } });
+});
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
