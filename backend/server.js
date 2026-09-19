@@ -81,3 +81,31 @@ mongoose
     );
     process.exit(1);
   });
+
+
+/* ═══════════════════════ 4. START THE SERVER ════════════════════════════ */
+const port = process.env.PORT || 3000;
+const server = app.listen(port, () => {
+  console.log(`🚀 Listening on http://localhost:${port}`);
+  console.log(`   Environment: ${process.env.NODE_ENV}`);
+});
+
+/* ══════════════════ 5. UNHANDLED PROMISE REJECTIONS ═════════════════════ */
+// The async counterpart to uncaughtException — typically an outage the app
+// cannot recover from. GRACEFUL shutdown here: the code is fine, an external
+// dependency failed, so let in-flight requests finish before exiting.
+process.on('unhandledRejection', (err) => {
+  console.error('💥 UNHANDLED REJECTION! Shutting down gracefully...');
+  console.error(err.name, err.message);
+  server.close(() => process.exit(1));
+});
+
+// SIGTERM — the platform politely asking us to stop (deploy, scale-down).
+// Exit 0: this was a requested shutdown, not a crash.
+process.on('SIGTERM', () => {
+  console.log('👋 SIGTERM received. Shutting down gracefully...');
+  server.close(() => {
+    console.log('   Process terminated.');
+    process.exit(0);
+  });
+});
