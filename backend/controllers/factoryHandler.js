@@ -49,3 +49,24 @@ exports.deleteOne = (Model, { userScoped = false } = {}) =>
     }
     res.status(204).send();
   });
+
+
+/**
+ * UPDATE ONE (PATCH).
+ * `returnDocument: 'after'` returns the NEW doc; `runValidators: true` re-runs
+ * schema validators (off by default — without it a PATCH could set a negative
+ * amount). Owner is part of the query, not the update.
+ */
+exports.updateOne = (Model, { userScoped = false } = {}) =>
+  catchAsync(async (req, res, next) => {
+    const doc = await Model.findOneAndUpdate(
+      { _id: req.params.id, ...ownerFilter(req, userScoped) },
+      req.body,
+      { returnDocument: 'after', runValidators: true },
+    );
+
+    if (!doc) {
+      return next(new AppError('No document found with that ID', 404));
+    }
+    res.status(200).json({ status: 'success', data: doc });
+  });
