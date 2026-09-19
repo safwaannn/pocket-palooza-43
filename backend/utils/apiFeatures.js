@@ -67,6 +67,21 @@ class APIFeatures {
     this.query = this.query.find(mongoFilter);
     return this;
   }
+
+  /**
+   * SORTING — ?sort=-date,amount  (comma-separated; leading `-` = descending)
+   * Default is `-_id` (newest first, stable) — never a field that may not
+   * exist on every document, which would make pagination unstable.
+   */
+  sort() {
+    if (this.queryString.sort) {
+      const sortBy = this.queryString.sort.split(',').join(' ');
+      this.query = this.query.sort(sortBy);
+    } else {
+      this.query = this.query.sort('-_id');
+    }
+    return this;
+  }
 }
 
 module.exports = APIFeatures;
