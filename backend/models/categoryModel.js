@@ -45,6 +45,30 @@ const categorySchema = new mongoose.Schema(
   },
 );
 
+// A user cannot have two categories with the same name + type. Global
+// categories (user: null) are likewise unique per name+type. `partialFilter`
+// is not needed — null participates in the index like any other value.
+categorySchema.index({ user: 1, name: 1, type: 1 }, { unique: true });
+
 const Category = mongoose.model('Category', categorySchema);
+
+/**
+ * The default categories seeded for the whole platform. Kept here so both the
+ * signup flow and any seed script share one source of truth.
+ */
+Category.DEFAULTS = [
+  { name: 'Salary', type: 'income' },
+  { name: 'Business', type: 'income' },
+  { name: 'Investment', type: 'income' },
+  { name: 'Gift', type: 'income' },
+  { name: 'Food', type: 'expense' },
+  { name: 'Rent', type: 'expense' },
+  { name: 'Transport', type: 'expense' },
+  { name: 'Utilities', type: 'expense' },
+  { name: 'Entertainment', type: 'expense' },
+  { name: 'Health', type: 'expense' },
+  { name: 'Shopping', type: 'expense' },
+  { name: 'Savings', type: 'expense' },
+];
 
 module.exports = Category;
