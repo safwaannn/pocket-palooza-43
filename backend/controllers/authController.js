@@ -1,0 +1,109 @@
+/**
+ * ============================================================================
+ * AUTH CONTROLLER — signup, login, and the guards that protect everything
+ * ============================================================================
+ *
+ * JWT authentication in plain terms: log in once with email + password, receive
+ * a signed token, then present that token on every later request. The token is
+ * SIGNED (tamper-proof) but NOT encrypted — anyone can read its payload — so we
+ * store only the user id in it and re-fetch the user from the DB on every
+ * request. That also means a role change or account deletion takes effect
+ * immediately, not at token expiry.
+ */
+const crypto = require('crypto');
+const { promisify } = require('util');
+const jwt = require('jsonwebtoken');
+
+const catchAsync = require('./../utils/catchAsync');
+const sendEmail = require('./../utils/email');
+const User = require('./../models/userModel');
+const AppError = require('./../utils/appError');
+
+const signToken = (id) =>
+  jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIREIN,
+  });
+
+/**
+ * Create a token, set it in an httpOnly cookie, and send it in the JSON body.
+ *   - cookie is for browsers (JS cannot read httpOnly cookies → XSS-safe)
+ *   - body token is for API clients using `Authorization: Bearer ...`
+ */
+const createSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIREIN * 24 * 60 * 60 * 1000,
+    ),
+    httpOnly: true, // JS cannot read it — defence against token theft via XSS
+    sameSite: 'strict', // not attached to cross-site requests — CSRF defence
+  };
+  // Only send over HTTPS in production (localhost is HTTP, so not in dev).
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', token, cookieOptions);
+
+  // Never leak the hash. In-memory only — we are not saving here.
+  user.password = undefined;
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: { user },
+  });
+};
+
+/**
+ * SIGN UP. Note the ALLOW-LIST: we pick fields explicitly rather than passing
+ * `req.body`, so a client cannot send `{ "role": "admin" }` and self-promote
+ * (a mass-assignment / privilege-escalation hole). `role` falls back to the
+ * schema default 'user'. We also seed the new user's default categories.
+ */
+exports.signup = catchAsync(async (req, res, next) => {
+  const newUser = await User.create({
+    name: req.body.name,
+    email: req.body.email,
+    password: req.body.password,
+    passwordConfirm: req.body.passwordConfirm,
+  });
+
+  createSendToken(newUser, 201, res);
+});
+
+/**
+ * LOG IN. Three checks, each with a security reason:
+ *   1. Both fields present (else bcrypt gets undefined → 500).
+ *   2. `.select('+password')` because the field is `select: false`.
+ *   3. One combined message for "no user" vs "wrong password" — separate
+ *      messages enable USER ENUMERATION. `||` short-circuits so we never call
+ *      correctPassword on a null user. 401, not 403.
+ */
+exports.login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return next(new AppError('Please provide email and password', 400));
+  }
+
+  const user = await User.findOne({ email }).select('+password');
+
+  if (!user || !(await user.correctPassword(password, user.password))) {
+    return next(new AppError('Incorrect email or password', 401));
+  }
+
+  createSendToken(user, 200, res);
+});
+
+/**
+ * LOG OUT. A JWT can't be invalidated server-side, so "logging out" means
+ * removing the client's copy: overwrite the cookie with a junk value that
+ * expires in 10 seconds. API clients simply discard their token.
+ */
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ status: 'success' });
+};
