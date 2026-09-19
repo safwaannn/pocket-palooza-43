@@ -96,6 +96,14 @@ const recurringSchema = new mongoose.Schema(
   },
 );
 
+// Hottest query for the materializer: a user's active schedules that are due.
+recurringSchema.index({ user: 1, active: 1, next_run: 1 });
+
+// Mongoose 9: param-less hook (no `next`).
+recurringSchema.pre(/^find/, function () {
+  this.populate({ path: 'category', select: 'name type' });
+});
+
 const RecurringTransaction = mongoose.model(
   'RecurringTransaction',
   recurringSchema,
