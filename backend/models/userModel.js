@@ -121,6 +121,43 @@ userSchema.pre(/^find/, function () {
   this.find({ active: { $ne: false } });
 });
 
+/* ═══════════════════════════ INSTANCE METHODS ═══════════════════════════ */
+
+// Compare a login attempt to the stored hash. bcrypt.compare reads the salt out
+// of the hash and compares in constant time (defeats timing attacks).
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword,
+) {
+  return bcrypt.compare(candidatePassword, userPassword);
+};
+
+// Was the password changed AFTER this token was issued? JWT `iat` is in seconds,
+// getTime() is milliseconds — hence `/ 1000`. Returns false when never changed.
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10,
+    );
+    return JWTTimestamp < changedTimestamp;
+  }
+  return false;
+};
+
+// Create a reset token: return the PLAIN token (emailed), store only its SHA-256
+// HASH (so a leaked DB has no usable tokens). Valid for 10 minutes. Caller must
+// save the document afterwards.
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
+};
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
