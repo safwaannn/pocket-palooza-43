@@ -66,6 +66,17 @@ const transactionSchema = new mongoose.Schema(
   },
 );
 
+// Compound index: the hottest query is "this user's transactions, newest
+// first", often filtered by date range. Indexing (user, date) makes that fast.
+transactionSchema.index({ user: 1, date: -1 });
+
+// Populate the category on every find so responses include its name and type.
+// Scoped to `select` so we don't drag the whole category document around.
+// Mongoose 9: hooks take no `next` — a param-less hook runs synchronously.
+transactionSchema.pre(/^find/, function () {
+  this.populate({ path: 'category', select: 'name type' });
+});
+
 const Transaction = mongoose.model('Transaction', transactionSchema);
 
 module.exports = Transaction;
