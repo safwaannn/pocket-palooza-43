@@ -156,4 +156,21 @@ app.use((req, res, next) => {
   next();
 });
 
+/* ═══════════════════════════════ 2. ROUTES ═══════════════════════════════ */
+// Every path is versioned under /api/v1/ so a future breaking change can ship
+// as /api/v2/ while existing clients keep working.
+app.use('/api/v1/users', userRouter);
+app.use('/api/v1/categories', categoryRouter);
+app.use('/api/v1/transactions', transactionRouter);
+app.use('/api/v1/budgets', budgetRouter);
+app.use('/api/v1/budget-alerts', budgetAlertRouter);
+app.use('/api/v1/recurring-transactions', recurringRouter);
+app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/ai', aiRouter);
+
+// A tiny health-check, handy for uptime monitors and load balancers.
+app.get('/api/v1/health', (req, res) => {
+  res.status(200).json({ status: 'success', time: req.requestTime });
+});
+
 module.exports = app;
