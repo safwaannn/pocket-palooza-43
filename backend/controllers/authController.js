@@ -107,3 +107,64 @@ exports.logout = (req, res) => {
   });
   res.status(200).json({ status: 'success' });
 };
+
+
+/**
+ * `protect` — THE GATEKEEPER. Put it in front of a route to require a login;
+ * it also sets `req.user` for everything downstream.
+ *   1. Find the token (Authorization header OR jwt cookie).
+ *   2. Verify it (jwt.verify; bad/expired tokens → clean 401s via errorController).
+ *   3. Does the user still exist? (token outlives a deleted account otherwise)
+ *   4. Was the password changed after the token was issued? ("log out everywhere")
+ */
+exports.protect = catchAsync(async (req, res, next) => {
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies && req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+
+  if (!token) {
+    return next(
+      new AppError('You are not logged in. Please log in to get access.', 401),
+    );
+  }
+
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(
+      new AppError('The user belonging to this token no longer exists.', 401),
+    );
+  }
+
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password. Please log in again.', 401),
+    );
+  }
+
+  req.user = currentUser;
+  next();
+});
+
+/**
+ * `restrictTo` — AUTHORISATION. Must come AFTER `protect` (it reads
+ * `req.user.role`). Returns a middleware with the allowed roles captured in a
+ * closure. 403 Forbidden: we know who you are, and the answer is still no.
+ */
+exports.restrictTo =
+  (...roles) =>
+  (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403),
+      );
+    }
+    next();
+  };
