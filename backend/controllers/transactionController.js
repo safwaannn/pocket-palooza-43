@@ -86,3 +86,32 @@ exports.getMonthlySpending = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ status: 'success', data: spending });
 });
+
+
+/**
+ * GET /transactions/summary?start=YYYY-MM-DD&end=YYYY-MM-DD
+ * → { income, expense, balance }  (balance = income − expense)
+ *
+ * The date range is optional; without it, all of the user's transactions count.
+ */
+exports.getSummary = catchAsync(async (req, res, next) => {
+  const match = { user: new mongoose.Types.ObjectId(req.user.id) };
+  if (req.query.start || req.query.end) {
+    match.date = {};
+    if (req.query.start) match.date.$gte = new Date(req.query.start);
+    if (req.query.end) match.date.$lte = new Date(req.query.end);
+  }
+
+  const rows = await Transaction.aggregate([
+    { $match: match },
+    { $group: { _id: '$type', total: { $sum: '$amount' } } },
+  ]);
+
+  const totals = { income: 0, expense: 0 };
+  rows.forEach((row) => {
+    totals[row._id] = row.total;
+  });
+  totals.balance = totals.income - totals.expense;
+
+  res.status(200).json({ status: 'success', data: totals });
+});
