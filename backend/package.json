@@ -1,0 +1,37 @@
+{
+  "name": "paisa-backend",
+  "version": "1.0.0",
+  "description": "Node/Express/MongoDB backend for the Paisa personal finance app",
+  "license": "ISC",
+  "author": "safwan ghare",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "start:prod": "NODE_ENV=production node server.js",
+    "debug": "ndb server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.6.1",
+    "express-xss-sanitizer": "^2.0.2",
+    "helmet": "^8.3.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.8.1",
+    "morgan": "^1.11.0",
+    "nodemailer": "^9.0.3",
+    "validator": "^13.15.35"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.5.6",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.9.6"
+  }
+}
