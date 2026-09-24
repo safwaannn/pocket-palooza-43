@@ -22,11 +22,10 @@ function Deny($reason) {
   exit 0
 }
 
-# Rule 1 — never touch the backend. Anything under doob-frontend/ is always allowed;
-# outside it, block Java/Maven/Spring/backend/server files.
-if ($n -notmatch 'doob-frontend' -and
-    $n -match '(?i)(/backend/|doob-backend|/server/|/src/main/|\.java$|/pom\.xml$|/mvnw)') {
-  Deny 'Project rule: never touch the backend. Edit only files under doob-frontend/.'
+# Rule 1 — never touch a JAVA backend (Spring/Maven). Node/Express backends
+# (e.g. this repo's /backend, a plain Express+Mongo API) are allowed.
+if ($n -match '(?i)(doob-backend|/src/main/java/|\.java$|/pom\.xml$|/mvnw)') {
+  Deny 'Project rule: never touch a Java/Spring backend.'
 }
 
 # Rule 2 — never use the `any` type in TypeScript.

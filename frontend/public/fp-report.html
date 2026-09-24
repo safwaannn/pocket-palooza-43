@@ -1,0 +1,1081 @@
+<title>FinTrack Field Project Report</title>
+<style>
+  :root{
+    --paper:#ffffff;
+    --ink:#1c1a15;
+    --ink-soft:#413d33;
+    --rule:#c9beac;
+    --maroon:#7a1620;
+    --maroon-deep:#54101a;
+    --gold:#a8842f;
+    --cream:#f7f2e7;
+    --backdrop:#e8e2d3;
+    --tableline:#8a8171;
+    --headband:#f1e9d6;
+    --good:#2f6b3f;
+    --bad:#8a2a2a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--backdrop);
+    color:var(--ink);
+    font-family:'Source Serif 4', Georgia, 'Times New Roman', serif;
+    padding-block:28px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+  }
+  .toolbar{
+    position:fixed; top:14px; right:16px; z-index:50;
+    display:flex; gap:8px;
+  }
+  .toolbar button{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:12px; font-weight:600; letter-spacing:.03em;
+    background:var(--maroon); color:#fff; border:none;
+    padding:9px 14px; border-radius:6px; cursor:pointer;
+    box-shadow:0 3px 10px rgba(0,0,0,.25);
+  }
+  .toolbar button:hover{background:var(--maroon-deep);}
+
+  .sheet{
+    width:210mm; min-height:297mm;
+    background:var(--paper);
+    padding:16mm 17mm 18mm;
+    box-shadow:0 6px 24px rgba(0,0,0,.22);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+  .pageno{
+    position:absolute; bottom:9mm; right:17mm;
+    font-family:'Inter',sans-serif; font-size:10px; color:var(--ink-soft);
+  }
+  h1,h2,h3,h4{ font-family:'Playfair Display', Georgia, serif; color:var(--maroon-deep); margin:0; }
+  .kicker{
+    font-family:'Inter',sans-serif; font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold); font-weight:700; margin-bottom:6px;
+  }
+  h2.section-title{
+    font-size:22px; text-align:center; text-transform:uppercase; letter-spacing:.04em;
+    border-bottom:2.5px solid var(--maroon); padding-bottom:8px; margin-bottom:16px;
+  }
+  p{ line-height:1.65; font-size:13.5px; text-align:justify; margin:0 0 10px; color:var(--ink);}
+  ul,ol{ font-size:13.5px; line-height:1.65; margin:0 0 10px 18px; padding:0;}
+  li{margin-bottom:5px;}
+  strong{color:var(--maroon-deep);}
+  .muted{color:var(--ink-soft);}
+
+  /* ---------- Title page ---------- */
+  .crest{width:96px;height:96px;flex-shrink:0;}
+  .letterhead{display:flex; align-items:center; gap:16px; border-bottom:3px double var(--maroon); padding-bottom:14px;}
+  .letterhead .name{font-family:'Playfair Display',serif; font-size:22px; color:var(--maroon); font-weight:900; line-height:1.15;}
+  .letterhead .sub{font-family:'Inter',sans-serif; font-size:11.5px; color:var(--ink-soft); margin-top:3px;}
+  .letterhead .idno{font-family:'Inter',sans-serif; font-size:9.5px; color:var(--gold); margin-top:5px;}
+
+  .title-block{ text-align:center; margin:auto 0; }
+  .title-block .tag{font-family:'Inter',sans-serif; font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:18px;}
+  .title-block .proj{font-family:'Playfair Display',serif; font-weight:900; font-size:44px; color:var(--maroon); margin:6px 0 4px;}
+  .title-block .projsub{font-family:'Inter',sans-serif; font-size:14px; color:var(--ink-soft); margin-bottom:34px;}
+  .title-block .field{font-size:13.5px; margin:16px 0 4px; font-family:'Inter',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:var(--gold); font-weight:700;}
+  .title-block .value{font-size:17px; font-weight:700; font-family:'Playfair Display',serif;}
+  .title-block .value small{display:block; font-family:'Inter',sans-serif; font-weight:500; font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .foot-note{ text-align:center; font-size:12.5px; color:var(--ink-soft); border-top:1px solid var(--rule); padding-top:14px; font-style:italic;}
+
+  /* ---------- Certificate ---------- */
+  .certband{
+    background:linear-gradient(135deg,var(--maroon),var(--maroon-deep));
+    color:#fff; border-radius:4px; padding:14px 18px; display:flex; align-items:center; gap:16px;
+    margin-bottom:18px;
+  }
+  .certband .crest2{width:58px;height:58px;flex-shrink:0;}
+  .certband .cname{font-family:'Playfair Display',serif; font-weight:900; font-size:20px;}
+  .certband .csub{font-family:'Inter',sans-serif; font-size:10.5px; opacity:.9; margin-top:2px;}
+  .certband .cofficers{margin-left:auto; text-align:right; font-family:'Inter',sans-serif; font-size:10.5px; line-height:1.5;}
+  .cert-title{ text-align:center; font-size:20px; text-decoration:underline; text-decoration-color:var(--gold); margin:10px 0 22px; letter-spacing:.03em;}
+  .cert-body p{font-size:14.5px; line-height:2; text-align:left;}
+  .cert-body .blank{border-bottom:1.4px solid var(--ink); padding:0 4px; font-weight:700; color:var(--maroon-deep);}
+  .signrow{display:flex; justify-content:space-between; margin-top:auto; padding-top:60px;}
+  .signrow div{text-align:center; font-size:12.5px; font-family:'Inter',sans-serif;}
+  .signrow div .line{width:170px; border-top:1.3px solid var(--ink); margin-bottom:6px;}
+  .stamp{
+    position:absolute; right:26mm; bottom:60mm; width:110px; height:110px; border:2.5px dashed var(--gold);
+    border-radius:50%; display:flex; align-items:center; justify-content:center; transform:rotate(-14deg);
+    font-family:'Inter',sans-serif; font-size:9.5px; text-align:center; color:var(--gold); font-weight:700; letter-spacing:.05em;
+    opacity:.75;
+  }
+
+  /* ---------- Index ---------- */
+  table.index-table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  table.index-table th{background:var(--headband); font-family:'Inter',sans-serif; text-transform:uppercase; font-size:11px; letter-spacing:.05em; padding:9px 10px; border:1px solid var(--tableline); text-align:left;}
+  table.index-table td{padding:8px 10px; border:1px solid var(--tableline); vertical-align:top;}
+  table.index-table td.sr{text-align:center; width:40px; font-weight:700; color:var(--maroon-deep);}
+  table.index-table td.pg{text-align:center; width:60px; font-family:'Inter',sans-serif;}
+  table.index-table .sub{margin:2px 0 0 14px; color:var(--ink-soft); font-size:12.5px;}
+
+  /* ---------- generic data tables ---------- */
+  table.dd{width:100%; border-collapse:collapse; font-size:12px; margin-bottom:8px;}
+  table.dd caption{
+    text-align:left; font-family:'Inter',sans-serif; font-weight:800; font-size:13.5px; color:#fff;
+    background:var(--maroon); padding:8px 10px; letter-spacing:.02em;
+  }
+  table.dd th{background:var(--headband); font-family:'Inter',sans-serif; font-size:10.6px; text-transform:uppercase; letter-spacing:.03em; padding:6px 8px; border:1px solid var(--tableline); text-align:left;}
+  table.dd td{padding:6px 8px; border:1px solid var(--tableline); font-family:'JetBrains Mono','Courier New',monospace; font-size:11.3px;}
+  table.dd td.desc{font-family:'Source Serif 4',serif; font-size:11.8px;}
+  .pk{color:#fff;background:var(--maroon); font-family:'Inter',sans-serif; font-weight:700; font-size:9.5px; padding:1px 6px; border-radius:3px;}
+  .fk{color:#fff;background:var(--gold); font-family:'Inter',sans-serif; font-weight:700; font-size:9.5px; padding:1px 6px; border-radius:3px;}
+  .uq{color:var(--maroon-deep); font-family:'Inter',sans-serif; font-weight:700; font-size:9.5px; border:1px solid var(--maroon-deep); padding:1px 6px; border-radius:3px;}
+
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .card{border:1px solid var(--rule); border-radius:6px; padding:12px 14px; background:var(--cream);}
+  .card h4{font-size:13.5px; margin-bottom:6px; color:var(--maroon-deep);}
+  .card ul{margin-bottom:0;}
+
+  .diagram-wrap{border:1px solid var(--rule); border-radius:6px; background:var(--cream); padding:10px; flex:1; display:flex; align-items:center; justify-content:center;}
+  .diagram-wrap svg{width:100%; height:auto;}
+  .caption{text-align:center; font-family:'Inter',sans-serif; font-size:11px; color:var(--ink-soft); margin-top:8px; font-style:italic;}
+
+  .shot-grid{display:grid; grid-template-columns:1fr; gap:14px;}
+  .shot{border:1px solid var(--rule); border-radius:6px; overflow:hidden; background:#f4f0e4;}
+  .shot img{width:100%; display:block; border-bottom:1px solid var(--rule);}
+  .shot .lbl{font-family:'Inter',sans-serif; font-size:11.5px; padding:7px 10px; color:var(--maroon-deep); font-weight:700;}
+
+  .req-list li strong{display:inline;}
+  .fq-num{display:inline-flex; width:20px; height:20px; align-items:center; justify-content:center; background:var(--maroon); color:#fff; border-radius:50%; font-size:11px; font-family:'Inter',sans-serif; margin-right:6px;}
+
+  @media print{
+    body{background:#fff; padding:0; gap:0;}
+    .toolbar{display:none;}
+    .sheet{box-shadow:none; page-break-after:always; margin:0;}
+  }
+  @media (max-width:860px){
+    .sheet{width:100%; min-height:auto; padding:8mm;}
+    .two-col{grid-template-columns:1fr;}
+  }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:opsz,wght@8..60,400;500;600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+
+<div class="toolbar"><button onclick="window.print()">🖨 Print / Save as PDF</button></div>
+
+<!-- ============ PAGE 1 — TITLE PAGE ============ -->
+<div class="sheet">
+  <div class="letterhead">
+    <svg class="crest" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="46" fill="none" stroke="#a8842f" stroke-width="2.5"/>
+      <circle cx="50" cy="50" r="38" fill="#f7f2e7" stroke="#7a1620" stroke-width="2"/>
+      <path d="M50 20 L58 40 L80 40 L62 53 L69 74 L50 61 L31 74 L38 53 L20 40 L42 40 Z" fill="#7a1620"/>
+      <text x="50" y="90" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#54101a" font-weight="700">EST. 1991</text>
+    </svg>
+    <div>
+      <div class="name">M.C.E. Society's<br/>Abeda Inamdar Senior College</div>
+      <div class="sub">Of Arts, Science &amp; Commerce, Pune — Affiliated to Savitribai Phule Pune University</div>
+      <div class="idno">Id. No. (PU/PN/ASC/088/(1992))</div>
+    </div>
+  </div>
+
+  <div class="title-block">
+    <div class="tag">A Field Project Report On</div>
+    <div class="proj">FinTrack</div>
+    <div class="projsub">A Full-Stack Personal Finance Management System</div>
+
+    <div class="field">Submitted By</div>
+    <div class="value">Safwan Ghare &amp; Arham Sarang</div>
+
+    <div class="field">Under the Guidance Of</div>
+    <div class="value">Prof. Kamil Khan</div>
+
+    <div class="field">Class</div>
+    <div class="value">T.Y.B.Sc.(C.A.) <small>Third Year Bachelor of Science (Computer Application)</small></div>
+  </div>
+
+  <div class="foot-note">
+    This Field Project Report is hereby presented to the esteemed Department of Computer Application,
+    signifying satisfactory completion of the requirements for Semester V of Bachelor of Computer Application,
+    during the academic year 2026&ndash;2027.
+  </div>
+  <div class="pageno">i</div>
+</div>
+
+<!-- ============ PAGE 2 — COLLEGE CERTIFICATE ============ -->
+<div class="sheet">
+  <div class="certband">
+    <svg class="crest2" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="46" fill="none" stroke="#a8842f" stroke-width="3"/>
+      <circle cx="50" cy="50" r="38" fill="#fff" stroke="#7a1620" stroke-width="2"/>
+      <path d="M50 20 L58 40 L80 40 L62 53 L69 74 L50 61 L31 74 L38 53 L20 40 L42 40 Z" fill="#7a1620"/>
+    </svg>
+    <div>
+      <div class="cname">Abeda Inamdar Senior College</div>
+      <div class="csub">of Arts, Science &amp; Commerce (Autonomous), Pune &nbsp;|&nbsp; Affiliated to Savitribai Phule Pune University &nbsp;|&nbsp; Accredited with 'A' Grade by NAAC</div>
+    </div>
+    <div class="cofficers">
+      Prof. Dr. Shaila Bootwala, Principal<br/>
+      M.Com., M.Phil., Ph.D.<br/>
+      Mrs. Abeda P. Inamdar, President — M.C.E. Society, Pune
+    </div>
+  </div>
+
+  <p class="muted" style="font-family:'Inter',sans-serif; font-size:11px;">Ref. AISC / FP / 2026-27 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date: 19/09/2026</p>
+
+  <div class="cert-title">Department of B.Sc. (Computer Application)<br/><span style="font-size:15px; letter-spacing:.2em;">CERTIFICATE</span></div>
+
+  <div class="cert-body">
+    <p>This is to certify that <span class="blank">Mr. Safwan Ghare</span> and <span class="blank">Mr. Arham Sarang</span>,
+    students of <span class="blank">T.Y. B.Sc.(C.A.)</span> of this college, have <strong>successfully completed</strong>
+    their Field Project (FP) titled <span class="blank">"FinTrack — A Personal Finance Management System"</span>
+    as prescribed in the curriculum of <span class="blank">Semester V</span>, during the academic year
+    <span class="blank">2026 &ndash; 2027</span>.</p>
+
+    <p>During this program, the students' performance, conduct, and dedication were found to be
+    <strong>satisfactory</strong>. The project demonstrates the design and implementation of a complete
+    web-based application covering front-end, back-end, database, authentication, and reporting modules.</p>
+  </div>
+
+  <div class="stamp">COLLEGE<br/>SEAL</div>
+
+  <div class="signrow">
+    <div><div class="line"></div>Project Guide<br/><strong>Prof. Kamil Khan</strong></div>
+    <div><div class="line"></div>Head, Dept. of B.C.A. (Science)<br/><strong>Prof. Veena Gandhi</strong></div>
+  </div>
+  <div class="signrow" style="padding-top:34px;">
+    <div><div class="line"></div>Internal Examiner</div>
+    <div><div class="line"></div>External Examiner</div>
+  </div>
+  <div class="pageno">ii</div>
+</div>
+
+<!-- ============ PAGE 3 — DECLARATION CERTIFICATE (kept as in original template) ============ -->
+<div class="sheet">
+  <p style="text-align:center; font-weight:700; font-family:'Inter',sans-serif; font-size:11.5px; color:var(--ink-soft); letter-spacing:.02em;">
+    [ This declaration is issued on the Department's letterhead, under the authorized signature of the Project Guide ]
+  </p>
+
+  <div class="cert-title" style="margin-top:26px;">This is to certify that,</div>
+
+  <div class="cert-body">
+    <p><strong>Mr. Safwan Ghare</strong> and <strong>Mr. Arham Sarang</strong>, students of <strong>T.Y.B.Sc.(Computer Application),
+    Department of Computer Application, Abeda Inamdar Senior College of Arts, Science &amp; Commerce, Pune</strong>,
+    have successfully completed a self-directed Field Project titled <strong>"FinTrack — A Personal Finance
+    Management System."</strong></p>
+
+    <p>The students actively carried out the complete software development life-cycle for the project &mdash;
+    requirement study, system design, database design, coding, testing, and documentation &mdash; and gained
+    practical knowledge in the field of <strong>Full-Stack Web Development, Database Management, and Financial
+    Application Design</strong>.</p>
+
+    <p>The project work carried out by the students has been found satisfactory and in line with the objectives
+    of the Field Project as prescribed by the Department.</p>
+  </div>
+
+  <div class="signrow" style="padding-top:120px;">
+    <div></div>
+    <div><div class="line"></div>Authorized Signature<br/><strong>Project Guide, Prof. Kamil Khan</strong></div>
+  </div>
+  <div class="pageno">iii</div>
+</div>
+
+<!-- ============ PAGE 4 — INDEX ============ -->
+<div class="sheet">
+  <h2 class="section-title">Index</h2>
+  <table class="index-table">
+    <tr><th style="width:40px;">Sr.No.</th><th>Topic</th><th style="width:60px;">Page No.</th></tr>
+    <tr><td class="sr">1</td><td>Introduction</td><td class="pg">01</td></tr>
+    <tr><td class="sr">2</td><td>Problem Definition</td><td class="pg">02</td></tr>
+    <tr><td class="sr">3</td><td>Current (Existing) System</td><td class="pg">03</td></tr>
+    <tr><td class="sr">4</td><td>Proposed System
+        <div class="sub">&bull; Purpose &nbsp;&bull; Scope &amp; Objectives &nbsp;&bull; Functional Requirements &nbsp;&bull; Non-Functional Requirements</div>
+    </td><td class="pg">04</td></tr>
+    <tr><td class="sr">5</td><td>Need of the Proposed System</td><td class="pg">06</td></tr>
+    <tr><td class="sr">6</td><td>Scope of the Proposed System</td><td class="pg">06</td></tr>
+    <tr><td class="sr">7</td><td>Fact Finding Techniques</td><td class="pg">07</td></tr>
+    <tr><td class="sr">8</td><td>Feasibility Study</td><td class="pg">08</td></tr>
+    <tr><td class="sr">9</td><td>Hardware and Software Requirements</td><td class="pg">09</td></tr>
+    <tr><td class="sr">10</td><td>E-R Diagram</td><td class="pg">10</td></tr>
+    <tr><td class="sr">11</td><td>Data Dictionary</td><td class="pg">11</td></tr>
+    <tr><td class="sr">12</td><td>DFD / UML Diagrams
+        <div class="sub">&bull; Context Diagram (DFD Level&nbsp;0) &nbsp;&bull; DFD Level&nbsp;1 &nbsp;&bull; UML Use-Case Diagram</div>
+    </td><td class="pg">14</td></tr>
+    <tr><td class="sr">13</td><td>Input / Output Screens</td><td class="pg">17</td></tr>
+    <tr><td class="sr">14</td><td>Limitations</td><td class="pg">21</td></tr>
+    <tr><td class="sr">15</td><td>Conclusion</td><td class="pg">22</td></tr>
+    <tr><td class="sr">16</td><td>Bibliography</td><td class="pg">23</td></tr>
+  </table>
+  <div class="pageno">iv</div>
+</div>
+
+<!-- ============ PAGE 5 — ACKNOWLEDGEMENT ============ -->
+<div class="sheet">
+  <h2 class="section-title">Acknowledgement</h2>
+  <p>We would like to express our sincere gratitude to everyone who supported and guided us in completing our
+  Field Project titled <strong>&ldquo;FinTrack &mdash; A Personal Finance Management System.&rdquo;</strong></p>
+  <p>First and foremost, we would like to thank our Project Guide, <strong>Prof. Kamil Khan</strong>, for providing
+  valuable guidance, technical suggestions, and continuous support throughout the design, development, and
+  documentation of this project.</p>
+  <p>We are grateful to the Head of the Department, <strong>Prof. Veena Gandhi</strong>, and the Principal,
+  <strong>Prof. Dr. Shaila Bootwala</strong>, for providing us with the necessary facilities, laboratory access,
+  and encouragement to complete this project successfully.</p>
+  <p>We would also like to thank all the faculty members of the Department of B.C.A. (Science) for their valuable
+  support and constructive suggestions at every review of the project.</p>
+  <p>Finally, we express our heartfelt thanks to our parents, friends, and classmates for their encouragement and
+  support throughout the completion of this project.</p>
+  <p style="margin-top:26px;">Thank You.</p>
+  <p style="margin-top:18px; font-weight:700;">Project Team<br/>Safwan Ghare<br/>Arham Sarang</p>
+  <div class="pageno">1</div>
+</div>
+
+<!-- ============ PAGE 6 — INTRODUCTION ============ -->
+<div class="sheet">
+  <h2 class="section-title">Introduction</h2>
+  <p><strong>FinTrack</strong> is a full-stack personal finance management web application that helps an
+  individual track income and expenses, plan monthly budgets, and understand exactly where their money goes
+  &mdash; all from one private, role-aware dashboard. It is built as a classic three-tier system: a
+  <strong>React 19 + Vite</strong> single-page front-end, a <strong>Node.js / Express</strong> REST API, and a
+  <strong>MongoDB</strong> document database accessed through the Mongoose ODM.</p>
+  <p>There are two broad classes of actor in the system: the <strong>End User</strong> (who may hold the role
+  <em>viewer</em>, <em>user</em>, or <em>manager</em>) and the <strong>Administrator</strong>. After registering
+  with a name, email, and password, a user lands on a personal Dashboard that summarises the current month's
+  income, expenses and balance, shows a budget-watch strip for every category, and lists recent transactions.
+  From there the user can record income/expense transactions (individually or via CSV import), organise money
+  into income/expense <em>categories</em> (system-provided defaults plus their own custom ones), set a monthly
+  spending <em>limit</em> per category, and let the system watch that limit and raise an <em>alert</em>
+  automatically at 80% and 100% of it. Recurring money movements &mdash; rent, salary, subscriptions &mdash; can
+  be scheduled once and are then auto-posted as real transactions on their due date. A Calendar view surfaces
+  every upcoming due date, and a Reports page turns the raw ledger into pie and bar charts. The Administrator, in
+  turn, can see every user's aggregate totals and promote or demote a user's role.</p>
+  <p>Unlike a paper cash-book or a generic spreadsheet, FinTrack understands money as structured, queryable
+  data: every rupee is tagged with a user, a category, a type (income/expense) and a date, which is what makes
+  automatic budget tracking, multi-currency display, and instant reporting possible.</p>
+  <div class="pageno">2</div>
+</div>
+
+<!-- ============ PAGE 7 — PROBLEM DEFINITION ============ -->
+<div class="sheet">
+  <h2 class="section-title">Problem Definition</h2>
+  <p>Most individuals still track their personal finances using informal, error-prone methods &mdash; a
+  notebook, a series of disconnected messaging app reminders, or a spreadsheet that is rebuilt every month.
+  These methods share the same weaknesses:</p>
+  <ul>
+    <li>There is no single place that shows income, expenses and balance <em>together</em>, so a person only
+    discovers overspending after the money is already gone.</li>
+    <li>Recurring bills (rent, EMIs, subscriptions) are easy to forget because nothing proactively reminds the
+    person before the due date.</li>
+    <li>A spreadsheet has no concept of a "budget limit" &mdash; nothing warns the user automatically when a
+    category is close to, or has crossed, its planned limit.</li>
+    <li>Manually categorising and totalling hundreds of transactions to answer a simple question &mdash; "how
+    much did I spend on food this month?" &mdash; is slow and repetitive.</li>
+    <li>Data kept in a personal file has no access control; it cannot safely be shared with a family member or
+    an advisor who should only see limited, role-appropriate information.</li>
+  </ul>
+  <p>FinTrack is defined to solve exactly this problem: a single, secure, always-available web system that
+  records every transaction once, automatically classifies and totals it, actively watches budgets on the
+  user's behalf, and presents the result as an easy-to-read dashboard and report &mdash; removing the manual
+  bookkeeping effort entirely.</p>
+  <div class="pageno">3</div>
+</div>
+
+<!-- ============ PAGE 8 — CURRENT SYSTEM ============ -->
+<div class="sheet">
+  <h2 class="section-title">Current (Existing) System</h2>
+  <p>Before adopting a system like FinTrack, the typical "current system" used by an individual to manage
+  personal finance is entirely manual or semi-manual, and suffers from the following gaps:</p>
+  <ul>
+    <li><strong>Manual ledgers / notebooks</strong> &mdash; every entry is handwritten; there is no automatic
+    total, no category-wise break-up, and no way to search past entries.</li>
+    <li><strong>Generic spreadsheets</strong> &mdash; require the user to write and maintain their own formulas;
+    a single wrong cell reference silently produces a wrong total, and there is no built-in alerting.</li>
+    <li><strong>Standalone banking apps</strong> &mdash; show transactions for a single account/card only, and
+    rarely let the user define custom budgets or categories that match their own spending habits.</li>
+    <li><strong>No recurring-transaction memory</strong> &mdash; a person must remember, every single month, to
+    log the rent payment, the salary credit, or a subscription renewal.</li>
+    <li><strong>No role separation</strong> &mdash; a single shared account (e.g. a family spreadsheet) gives
+    everyone full edit rights; there is no "read-only" or "admin" distinction.</li>
+  </ul>
+  <p>These systems focus purely on <em>recording</em> a transaction; none of them proactively help the user
+  understand, budget for, or get warned about their spending &mdash; the gap FinTrack is built to close.</p>
+  <div class="pageno">4</div>
+</div>
+
+<!-- ============ PAGE 9 — PROPOSED SYSTEM ============ -->
+<div class="sheet">
+  <h2 class="section-title">Proposed System</h2>
+
+  <h4 style="margin-bottom:6px;">Purpose</h4>
+  <p>FinTrack is proposed as a secure, web-based, multi-user personal finance tracker that automates the
+  entire cycle of recording income/expenses, organising them by category, enforcing monthly budgets, raising
+  timely alerts, auto-posting recurring transactions, and visualising the result through charts &mdash; replacing
+  every manual step described in the existing system.</p>
+
+  <h4 style="margin:14px 0 6px;">Scope &amp; Objectives</h4>
+  <ul>
+    <li>Allow a user to sign up, sign in, and manage a personal profile (name, email, password, preferred
+    currency) securely.</li>
+    <li>Let a user record, edit, delete, search and filter income/expense transactions, and bulk import/export
+    them via CSV.</li>
+    <li>Provide default global categories plus the ability to create custom income/expense categories.</li>
+    <li>Let a user set a monthly spending limit per category and automatically track spend against it.</li>
+    <li>Automatically raise a one-time alert when spend crosses 80% and 100% of a budget.</li>
+    <li>Schedule recurring transactions (daily / weekly / monthly / yearly) that auto-post on their due date and
+    surface upcoming dues on a calendar.</li>
+    <li>Visualise income vs. expense trends and category-wise break-up through pie/bar reports.</li>
+    <li>Support role-based access (<em>viewer</em>, <em>user</em>, <em>manager</em>, <em>admin</em>) and an admin
+    panel to view every user's totals and manage roles.</li>
+  </ul>
+
+  <div class="two-col" style="margin-top:6px;">
+    <div class="card">
+      <h4>Functional Requirements</h4>
+      <ul class="req-list">
+        <li><span class="fq-num">1</span><strong>Authentication</strong> — signup, login, logout, forgot/reset password, change password.</li>
+        <li><span class="fq-num">2</span><strong>Transaction management</strong> — create, read, update, delete; filter by type/category/date/keyword.</li>
+        <li><span class="fq-num">3</span><strong>CSV import / export</strong> of transactions.</li>
+        <li><span class="fq-num">4</span><strong>Category management</strong> — global defaults + custom, income or expense.</li>
+        <li><span class="fq-num">5</span><strong>Budget management</strong> — one limit per category per month; live spent/remaining %.</li>
+        <li><span class="fq-num">6</span><strong>Automatic alerting</strong> at 80% / 100% of budget, with acknowledge + optional email.</li>
+        <li><span class="fq-num">7</span><strong>Recurring schedules</strong> — create/pause/edit; auto-materialise due transactions.</li>
+        <li><span class="fq-num">8</span><strong>Calendar view</strong> of upcoming recurring dues.</li>
+        <li><span class="fq-num">9</span><strong>Reports &amp; dashboard</strong> — totals, monthly trend, category break-up.</li>
+        <li><span class="fq-num">10</span><strong>Multi-currency</strong> display per user.</li>
+        <li><span class="fq-num">11</span><strong>Admin panel</strong> — list users, view totals, change a user's role.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Non-Functional Requirements</h4>
+      <ul>
+        <li><strong>Security</strong> — passwords hashed with bcrypt, JWT-based sessions, role-based route guards, password fields never sent to the client.</li>
+        <li><strong>Data isolation</strong> — every query is scoped to the logged-in user's own <code>_id</code>.</li>
+        <li><strong>Performance</strong> — compound MongoDB indexes on (user, date) and (user, active, next_run) keep the hottest queries fast as data grows.</li>
+        <li><strong>Usability</strong> — responsive, single-page interface; instant client-side validation via Zod + React Hook Form.</li>
+        <li><strong>Reliability</strong> — idempotent alert generation (unique index) guarantees no duplicate alerts.</li>
+        <li><strong>Maintainability</strong> — modular Express routes/controllers/models; typed React components.</li>
+        <li><strong>Availability</strong> — stateless API tier, horizontally scalable behind a load balancer.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno">5</div>
+</div>
+
+<!-- ============ PAGE 10 — NEED + SCOPE ============ -->
+<div class="sheet">
+  <h2 class="section-title">Need of the Proposed System</h2>
+  <p>A working individual today juggles multiple income sources, recurring bills, and discretionary spending
+  across several payment modes (cash, UPI, card). Without a system that consolidates all of this, budgeting
+  decisions are made on guesswork rather than data, and problems (like a category quietly going over budget)
+  are noticed only after the fact. FinTrack is needed to give the user a live, always-accurate picture of their
+  money, remove the manual effort of logging recurring bills every month, and turn budgeting from a reactive
+  chore into a proactive, alert-driven habit.</p>
+
+  <h2 class="section-title" style="margin-top:22px;">Scope of the Proposed System</h2>
+  <p>The system is designed for use by any individual who wants to track personal or household finances, and
+  can be extended to small households or shared family budgets with minor modification (e.g. multiple members
+  under one budget). Because currency is a per-user setting supporting INR, USD, EUR, GBP, JPY, AUD, CAD, SGD
+  and AED, the same system serves users across regions without change. The role layer (viewer / user / manager
+  / admin) means the same deployment can also serve a small team or advisory relationship, where one person has
+  read-only visibility into another's finances. The CSV import/export feature means the system can absorb
+  historical data from any bank statement or spreadsheet the user already has, and export data back out at any
+  time for use elsewhere.</p>
+  <div class="pageno">6</div>
+</div>
+
+<!-- ============ PAGE 11 — FACT FINDING ============ -->
+<div class="sheet">
+  <h2 class="section-title">Fact Finding Techniques</h2>
+  <p><strong>1. Interview</strong><br/>
+  Prospective users &mdash; students and working individuals who currently track expenses on paper or in
+  spreadsheets &mdash; were informally interviewed about what frustrates them most about their current method.
+  This surfaced the two most-requested features: automatic budget alerts and recurring-bill reminders.</p>
+  <p><strong>2. Observation</strong><br/>
+  The existing habits of a few sample users (a shared family spreadsheet, a notes-app expense list) were
+  observed directly to understand real usage patterns &mdash; how often entries are made, which categories
+  dominate spend, and where the manual process breaks down (e.g. forgetting to log a transaction for days).</p>
+  <p><strong>3. Questionnaire</strong><br/>
+  A short questionnaire on desired features (currency preference, need for CSV import, importance of email
+  alerts) was circulated among peers; the results directly shaped the priority of the multi-currency and
+  email-alert features implemented in the system.</p>
+  <p><strong>4. Document / Record Review</strong><br/>
+  Sample bank statements and UPI transaction exports were reviewed to design a CSV import format that a real
+  user's existing data could map onto with minimal manual clean-up.</p>
+  <div class="pageno">7</div>
+</div>
+
+<!-- ============ PAGE 12 — FEASIBILITY ============ -->
+<div class="sheet">
+  <h2 class="section-title">Feasibility Study</h2>
+  <div class="two-col">
+    <div class="card">
+      <h4>1. Technical Feasibility</h4>
+      <p style="margin:0;">The entire stack &mdash; React, Node.js, Express, MongoDB &mdash; is open-source, free
+      to use, well documented, and runs on ordinary consumer hardware. No proprietary or licensed component is
+      required, so the project is technically feasible to build and to host.</p>
+    </div>
+    <div class="card">
+      <h4>2. Economic Feasibility</h4>
+      <p style="margin:0;">Development uses free/open-source tools throughout; the only recurring cost in
+      production is database and server hosting, both of which have generous free tiers suitable for a
+      personal-scale application. The cost saved in manual bookkeeping time far outweighs this.</p>
+    </div>
+    <div class="card">
+      <h4>3. Operational Feasibility</h4>
+      <p style="margin:0;">The interface mirrors a familiar dashboard/ledger layout, requires no training, and
+      every core action (add transaction, set budget) takes only a few clicks &mdash; making day-to-day
+      operation realistic for a non-technical end user.</p>
+    </div>
+    <div class="card">
+      <h4>4. Schedule Feasibility</h4>
+      <p style="margin:0;">The modular design (independent models for users, categories, transactions, budgets,
+      alerts, and recurring schedules) allowed each module to be built, tested and integrated incrementally
+      within the semester's project timeline.</p>
+    </div>
+  </div>
+  <div class="pageno">8</div>
+</div>
+
+<!-- ============ PAGE 13 — HARDWARE/SOFTWARE ============ -->
+<div class="sheet">
+  <h2 class="section-title">Hardware and Software Requirements</h2>
+  <div class="two-col">
+    <div class="card">
+      <h4>Hardware Requirements</h4>
+      <ul>
+        <li>Processor: Dual-core 2 GHz or above (Intel i3 / equivalent)</li>
+        <li>RAM: 4 GB minimum (8 GB recommended for development)</li>
+        <li>Storage: 500 MB free disk space for the application &amp; dependencies</li>
+        <li>Internet connection: broadband, for client&ndash;server communication</li>
+        <li>Standard display, keyboard and mouse / touch input</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Software Requirements</h4>
+      <ul>
+        <li><strong>Front-end:</strong> React 19, Vite 8, TypeScript, Tailwind CSS v4, shadcn/ui (Radix UI), React Router v7, TanStack Query, React Hook Form + Zod, Recharts</li>
+        <li><strong>Back-end:</strong> Node.js, Express.js (REST API)</li>
+        <li><strong>Database:</strong> MongoDB with Mongoose ODM</li>
+        <li><strong>Authentication:</strong> JSON Web Tokens (JWT), bcryptjs password hashing</li>
+        <li><strong>Email service:</strong> SMTP / Resend (budget-alert emails)</li>
+        <li><strong>Operating System:</strong> Windows / Linux / macOS (cross-platform)</li>
+        <li><strong>Tools:</strong> VS Code, Postman, Git &amp; GitHub, MongoDB Compass</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pageno">9</div>
+</div>
+
+<!-- ============ PAGE 14 — ER DIAGRAM ============ -->
+<div class="sheet">
+  <h2 class="section-title">E-R Diagram</h2>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 1400 980" xmlns="http://www.w3.org/2000/svg" font-family="Inter,Arial,sans-serif">
+      <defs>
+        <marker id="crow1" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="#7a1620" stroke-width="1.4"/></marker>
+      </defs>
+      <style>
+        .ename{fill:#fff; font-weight:800; font-size:14px;}
+        .ehead{fill:#7a1620;}
+        .attr{fill:#1c1a15; font-size:11px;}
+        .attrpk{fill:#54101a; font-size:11px; font-weight:700; text-decoration:underline;}
+        .attrfk{fill:#8a6d1f; font-size:11px; font-style:italic;}
+        .box{fill:#fffdf8; stroke:#8a8171; stroke-width:1.3;}
+        .lbl{fill:#54101a; font-size:11px; font-weight:700;}
+        .rel{stroke:#7a1620; stroke-width:1.4; fill:none;}
+      </style>
+
+      <!-- USER -->
+      <rect x="560" y="20" width="230" height="200" rx="4" class="box"/>
+      <rect x="560" y="20" width="230" height="30" rx="4" class="ehead"/>
+      <text x="675" y="40" text-anchor="middle" class="ename">USER</text>
+      <text x="572" y="66" class="attrpk">_id (PK)</text>
+      <text x="572" y="84" class="attr">name : String</text>
+      <text x="572" y="102" class="attr">email : String (unique)</text>
+      <text x="572" y="120" class="attr">password : String (hash)</text>
+      <text x="572" y="138" class="attr">currency : Enum [9]</text>
+      <text x="572" y="156" class="attr">role : Enum(viewer,user,</text>
+      <text x="586" y="171" class="attr">manager,admin)</text>
+      <text x="572" y="189" class="attr">active : Boolean</text>
+      <text x="572" y="207" class="attr">createdAt / updatedAt</text>
+
+      <!-- CATEGORY -->
+      <rect x="60" y="300" width="230" height="150" rx="4" class="box"/>
+      <rect x="60" y="300" width="230" height="30" rx="4" class="ehead"/>
+      <text x="175" y="320" text-anchor="middle" class="ename">CATEGORY</text>
+      <text x="72" y="346" class="attrpk">_id (PK)</text>
+      <text x="72" y="364" class="attr">name : String</text>
+      <text x="72" y="382" class="attr">type : Enum(income,expense)</text>
+      <text x="72" y="400" class="attrfk">user : ObjectId (FK, nullable)</text>
+      <text x="72" y="418" class="attr">createdAt / updatedAt</text>
+      <text x="72" y="436" class="attr" style="font-size:9.5px; fill:#8a8171;">unique(user,name,type)</text>
+
+      <!-- TRANSACTION -->
+      <rect x="560" y="300" width="230" height="170" rx="4" class="box"/>
+      <rect x="560" y="300" width="230" height="30" rx="4" class="ehead"/>
+      <text x="675" y="320" text-anchor="middle" class="ename">TRANSACTION</text>
+      <text x="572" y="346" class="attrpk">_id (PK)</text>
+      <text x="572" y="364" class="attrfk">user : ObjectId (FK)</text>
+      <text x="572" y="382" class="attrfk">category : ObjectId (FK, null)</text>
+      <text x="572" y="400" class="attr">amount : Number (&gt;0)</text>
+      <text x="572" y="418" class="attr">type : Enum(income,expense)</text>
+      <text x="572" y="436" class="attr">note : String, date : Date</text>
+      <text x="572" y="454" class="attr" style="font-size:9.5px; fill:#8a8171;">index(user,date desc)</text>
+
+      <!-- BUDGET -->
+      <rect x="1060" y="300" width="230" height="170" rx="4" class="box"/>
+      <rect x="1060" y="300" width="230" height="30" rx="4" class="ehead"/>
+      <text x="1175" y="320" text-anchor="middle" class="ename">BUDGET</text>
+      <text x="1072" y="346" class="attrpk">_id (PK)</text>
+      <text x="1072" y="364" class="attrfk">user : ObjectId (FK)</text>
+      <text x="1072" y="382" class="attrfk">category : ObjectId (FK)</text>
+      <text x="1072" y="400" class="attr">month_year : String YYYY-MM</text>
+      <text x="1072" y="418" class="attr">limit_amount : Number</text>
+      <text x="1072" y="436" class="attr">createdAt / updatedAt</text>
+      <text x="1072" y="454" class="attr" style="font-size:9.5px; fill:#8a8171;">unique(user,category,month_year)</text>
+
+      <!-- BUDGET ALERT -->
+      <rect x="1060" y="530" width="230" height="180" rx="4" class="box"/>
+      <rect x="1060" y="530" width="230" height="30" rx="4" class="ehead"/>
+      <text x="1175" y="550" text-anchor="middle" class="ename">BUDGET_ALERT</text>
+      <text x="1072" y="576" class="attrpk">_id (PK)</text>
+      <text x="1072" y="594" class="attrfk">user : ObjectId (FK)</text>
+      <text x="1072" y="612" class="attrfk">category : ObjectId (FK)</text>
+      <text x="1072" y="630" class="attr">month_year : String</text>
+      <text x="1072" y="648" class="attr">threshold : Enum(80,100)</text>
+      <text x="1072" y="666" class="attr">acknowledged, emailed : Bool</text>
+      <text x="1072" y="684" class="attr" style="font-size:9.5px; fill:#8a8171;">unique(user,category,month_year,threshold)</text>
+
+      <!-- RECURRING -->
+      <rect x="560" y="560" width="260" height="200" rx="4" class="box"/>
+      <rect x="560" y="560" width="260" height="30" rx="4" class="ehead"/>
+      <text x="690" y="580" text-anchor="middle" class="ename">RECURRING_TRANSACTION</text>
+      <text x="572" y="606" class="attrpk">_id (PK)</text>
+      <text x="572" y="624" class="attrfk">user : ObjectId (FK)</text>
+      <text x="572" y="642" class="attrfk">category : ObjectId (FK, null)</text>
+      <text x="572" y="660" class="attr">type, amount, note</text>
+      <text x="572" y="678" class="attr">frequency : Enum(4), interval_count</text>
+      <text x="572" y="696" class="attr">start_date / next_run / end_date</text>
+      <text x="572" y="714" class="attr">last_run, active : Boolean</text>
+      <text x="572" y="732" class="attr" style="font-size:9.5px; fill:#8a8171;">index(user,active,next_run)</text>
+
+      <!-- relationships USER -->
+      <path d="M675 220 L675 300" class="rel" marker-end="url(#crow1)"/>
+      <text x="686" y="270" class="lbl">1</text><text x="686" y="290" class="lbl">M</text>
+
+      <path d="M560 200 C300 250 250 250 175 300" class="rel" marker-end="url(#crow1)"/>
+      <text x="330" y="238" class="lbl">1 owns M</text>
+
+      <path d="M789 210 C1000 250 1050 260 1150 300" class="rel" marker-end="url(#crow1)"/>
+      <text x="960" y="238" class="lbl">1 sets M</text>
+
+      <path d="M789 175 C1100 230 1250 300 1220 530" class="rel" marker-end="url(#crow1)"/>
+      <text x="1230" y="330" class="lbl">1 raises M</text>
+
+      <path d="M675 220 C630 350 630 450 660 560" class="rel" marker-end="url(#crow1)"/>
+      <text x="600" y="430" class="lbl">1 schedules M</text>
+
+      <!-- relationships CATEGORY -->
+      <path d="M290 380 C450 380 480 380 560 385" class="rel" marker-end="url(#crow1)"/>
+      <text x="400" y="372" class="lbl">1 tags M (optional)</text>
+
+      <path d="M290 400 C700 500 900 420 1060 385" class="rel" marker-end="url(#crow1)"/>
+      <text x="640" y="500" class="lbl">1 limits M</text>
+
+      <path d="M290 420 C700 620 900 640 1060 610" class="rel" marker-end="url(#crow1)"/>
+      <text x="640" y="600" class="lbl">1 triggers M</text>
+
+      <path d="M290 440 C420 560 480 610 560 640" class="rel" marker-end="url(#crow1)"/>
+      <text x="330" y="560" class="lbl">1 classifies M (optional)</text>
+
+      <!-- BUDGET -> ALERT (same category/month) -->
+      <path d="M1175 470 L1175 530" class="rel" marker-end="url(#crow1)"/>
+      <text x="1186" y="505" class="lbl">watches</text>
+    </svg>
+  </div>
+  <p class="caption">Fig. 10.1 &mdash; Entity&ndash;Relationship diagram of FinTrack (6 collections, MongoDB / Mongoose). PK = primary key (<code>_id</code>), FK = foreign-key reference (<code>ObjectId</code>).</p>
+  <div class="pageno">10</div>
+</div>
+
+<!-- ============ PAGE 15/16 — DATA DICTIONARY ============ -->
+<div class="sheet">
+  <h2 class="section-title">Data Dictionary</h2>
+
+  <table class="dd">
+    <caption>1. USERS — one row per registered person</caption>
+    <tr><th>Field</th><th>Data Type</th><th>Constraint</th><th class="desc" style="font-family:Inter,sans-serif;">Description</th></tr>
+    <tr><td>_id</td><td>ObjectId</td><td><span class="pk">PK</span></td><td class="desc">System-generated unique identifier</td></tr>
+    <tr><td>name</td><td>String</td><td>Required</td><td class="desc">Full name of the user</td></tr>
+    <tr><td>email</td><td>String</td><td><span class="uq">Unique</span>, Required, lowercase</td><td class="desc">Login identifier; validated email format</td></tr>
+    <tr><td>password</td><td>String</td><td>Required, min 8 chars, hidden</td><td class="desc">bcrypt hash of the password; never returned by the API</td></tr>
+    <tr><td>passwordConfirm</td><td>String (virtual)</td><td>Required on create</td><td class="desc">Must equal <code>password</code>; discarded after validation</td></tr>
+    <tr><td>currency</td><td>String (Enum)</td><td>Default 'INR'</td><td class="desc">INR, USD, EUR, GBP, JPY, AUD, CAD, SGD, AED</td></tr>
+    <tr><td>role</td><td>String (Enum)</td><td>Default 'user'</td><td class="desc">viewer / user / manager / admin</td></tr>
+    <tr><td>passwordChangedAt</td><td>Date</td><td>Optional</td><td class="desc">Used to invalidate JWTs issued before a password change</td></tr>
+    <tr><td>passwordResetToken</td><td>String</td><td>Optional, hashed</td><td class="desc">SHA-256 hash of a one-time reset token</td></tr>
+    <tr><td>passwordResetExpires</td><td>Date</td><td>Optional</td><td class="desc">Reset token validity (10 minutes)</td></tr>
+    <tr><td>active</td><td>Boolean</td><td>Default true, hidden</td><td class="desc">Soft-delete flag</td></tr>
+    <tr><td>createdAt / updatedAt</td><td>Date</td><td>Auto</td><td class="desc">Record timestamps</td></tr>
+  </table>
+
+  <table class="dd">
+    <caption>2. CATEGORIES — income / expense labels</caption>
+    <tr><th>Field</th><th>Data Type</th><th>Constraint</th><th class="desc" style="font-family:Inter,sans-serif;">Description</th></tr>
+    <tr><td>_id</td><td>ObjectId</td><td><span class="pk">PK</span></td><td class="desc">Unique identifier</td></tr>
+    <tr><td>name</td><td>String</td><td>Required, max 50 chars</td><td class="desc">Category label, e.g. "Food", "Salary"</td></tr>
+    <tr><td>type</td><td>String (Enum)</td><td>Required</td><td class="desc">income / expense</td></tr>
+    <tr><td>user</td><td>ObjectId</td><td><span class="fk">FK&rarr;Users</span>, nullable</td><td class="desc">null = global/default category shared by all users</td></tr>
+    <tr><td>createdAt / updatedAt</td><td>Date</td><td>Auto</td><td class="desc">Record timestamps</td></tr>
+  </table>
+  <p style="font-size:11px; color:var(--ink-soft); margin-top:-4px;">Compound unique index: <code>(user, name, type)</code> — a user cannot create two categories with the same name and type.</p>
+
+  <table class="dd">
+    <caption>3. TRANSACTIONS — every income / expense entry</caption>
+    <tr><th>Field</th><th>Data Type</th><th>Constraint</th><th class="desc" style="font-family:Inter,sans-serif;">Description</th></tr>
+    <tr><td>_id</td><td>ObjectId</td><td><span class="pk">PK</span></td><td class="desc">Unique identifier</td></tr>
+    <tr><td>user</td><td>ObjectId</td><td><span class="fk">FK&rarr;Users</span>, Required</td><td class="desc">Owner of the transaction</td></tr>
+    <tr><td>category</td><td>ObjectId</td><td><span class="fk">FK&rarr;Categories</span>, nullable</td><td class="desc">null after its category is deleted ("Uncategorized")</td></tr>
+    <tr><td>amount</td><td>Number</td><td>Required, min 0.01</td><td class="desc">Always stored positive; direction comes from <code>type</code></td></tr>
+    <tr><td>type</td><td>String (Enum)</td><td>Required</td><td class="desc">income / expense</td></tr>
+    <tr><td>note</td><td>String</td><td>Optional, max 255 chars</td><td class="desc">Free-text memo</td></tr>
+    <tr><td>date</td><td>Date</td><td>Required, default now</td><td class="desc">Date the money moved (API format YYYY-MM-DD)</td></tr>
+    <tr><td>createdAt / updatedAt</td><td>Date</td><td>Auto</td><td class="desc">Record timestamps</td></tr>
+  </table>
+  <p style="font-size:11px; color:var(--ink-soft); margin-top:-4px;">Index: <code>(user, date desc)</code> — optimises "this user's transactions, newest first".</p>
+  <div class="pageno">11</div>
+</div>
+
+<div class="sheet">
+  <table class="dd">
+    <caption>4. BUDGETS — one monthly limit per category</caption>
+    <tr><th>Field</th><th>Data Type</th><th>Constraint</th><th class="desc" style="font-family:Inter,sans-serif;">Description</th></tr>
+    <tr><td>_id</td><td>ObjectId</td><td><span class="pk">PK</span></td><td class="desc">Unique identifier</td></tr>
+    <tr><td>user</td><td>ObjectId</td><td><span class="fk">FK&rarr;Users</span>, Required</td><td class="desc">Owner of the budget</td></tr>
+    <tr><td>category</td><td>ObjectId</td><td><span class="fk">FK&rarr;Categories</span>, Required</td><td class="desc">Expense category the limit applies to</td></tr>
+    <tr><td>month_year</td><td>String</td><td>Required, pattern YYYY-MM</td><td class="desc">Budget month, e.g. "2026-09"</td></tr>
+    <tr><td>limit_amount</td><td>Number</td><td>Required, min 0.01</td><td class="desc">Maximum planned spend for the month</td></tr>
+    <tr><td>createdAt / updatedAt</td><td>Date</td><td>Auto</td><td class="desc">Record timestamps</td></tr>
+  </table>
+  <p style="font-size:11px; color:var(--ink-soft); margin-top:-4px;">Compound unique index: <code>(user, category, month_year)</code> — enables an UPSERT: setting a limit twice updates it rather than duplicating.</p>
+
+  <table class="dd">
+    <caption>5. BUDGET_ALERTS — 80% / 100% budget warnings</caption>
+    <tr><th>Field</th><th>Data Type</th><th>Constraint</th><th class="desc" style="font-family:Inter,sans-serif;">Description</th></tr>
+    <tr><td>_id</td><td>ObjectId</td><td><span class="pk">PK</span></td><td class="desc">Unique identifier</td></tr>
+    <tr><td>user</td><td>ObjectId</td><td><span class="fk">FK&rarr;Users</span>, Required</td><td class="desc">Owner of the alert</td></tr>
+    <tr><td>category</td><td>ObjectId</td><td><span class="fk">FK&rarr;Categories</span>, Required</td><td class="desc">Category the alert refers to</td></tr>
+    <tr><td>month_year</td><td>String</td><td>Required, pattern YYYY-MM</td><td class="desc">Month the alert belongs to</td></tr>
+    <tr><td>threshold</td><td>Number (Enum)</td><td>80 or 100</td><td class="desc">Percentage of the limit that was crossed</td></tr>
+    <tr><td>acknowledged</td><td>Boolean</td><td>Default false</td><td class="desc">True once the user has seen/dismissed it</td></tr>
+    <tr><td>emailed</td><td>Boolean</td><td>Default false</td><td class="desc">True once an alert e-mail has been sent</td></tr>
+    <tr><td>createdAt / updatedAt</td><td>Date</td><td>Auto</td><td class="desc">Record timestamps</td></tr>
+  </table>
+  <p style="font-size:11px; color:var(--ink-soft); margin-top:-4px;">Compound unique index: <code>(user, category, month_year, threshold)</code> — guarantees each threshold fires at most once per category/month.</p>
+
+  <table class="dd">
+    <caption>6. RECURRING_TRANSACTIONS — auto-posting schedules</caption>
+    <tr><th>Field</th><th>Data Type</th><th>Constraint</th><th class="desc" style="font-family:Inter,sans-serif;">Description</th></tr>
+    <tr><td>_id</td><td>ObjectId</td><td><span class="pk">PK</span></td><td class="desc">Unique identifier</td></tr>
+    <tr><td>user</td><td>ObjectId</td><td><span class="fk">FK&rarr;Users</span>, Required</td><td class="desc">Owner of the schedule</td></tr>
+    <tr><td>category</td><td>ObjectId</td><td><span class="fk">FK&rarr;Categories</span>, nullable</td><td class="desc">Category applied to each generated transaction</td></tr>
+    <tr><td>type</td><td>String (Enum)</td><td>Required</td><td class="desc">income / expense</td></tr>
+    <tr><td>amount</td><td>Number</td><td>Required, min 0.01</td><td class="desc">Amount posted on each occurrence</td></tr>
+    <tr><td>note</td><td>String</td><td>Optional, max 255 chars</td><td class="desc">Free-text memo</td></tr>
+    <tr><td>frequency</td><td>String (Enum)</td><td>Required</td><td class="desc">daily / weekly / monthly / yearly</td></tr>
+    <tr><td>interval_count</td><td>Number</td><td>Default 1, min 1</td><td class="desc">e.g. "every 2 weeks" &rarr; frequency=weekly, interval_count=2</td></tr>
+    <tr><td>start_date</td><td>String</td><td>Required, YYYY-MM-DD</td><td class="desc">First occurrence date</td></tr>
+    <tr><td>next_run</td><td>String</td><td>Required, YYYY-MM-DD</td><td class="desc">Next date a transaction is due to be created</td></tr>
+    <tr><td>end_date</td><td>String</td><td>Optional, YYYY-MM-DD</td><td class="desc">Schedule deactivates once next_run passes this</td></tr>
+    <tr><td>last_run</td><td>String</td><td>Optional, YYYY-MM-DD</td><td class="desc">Date of the most recent auto-post</td></tr>
+    <tr><td>active</td><td>Boolean</td><td>Default true</td><td class="desc">false = paused/ended; ignored by the materializer</td></tr>
+    <tr><td>createdAt / updatedAt</td><td>Date</td><td>Auto</td><td class="desc">Record timestamps</td></tr>
+  </table>
+  <p style="font-size:11px; color:var(--ink-soft); margin-top:-4px;">Index: <code>(user, active, next_run)</code> — the hottest query for the materializer job: "this user's active schedules that are due".</p>
+  <div class="pageno">12</div>
+</div>
+
+<!-- ============ PAGE 17 — DFD CONTEXT ============ -->
+<div class="sheet">
+  <h2 class="section-title">DFD &mdash; Context Diagram (Level 0)</h2>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" font-family="Inter,Arial,sans-serif">
+      <defs><marker id="c0" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8" fill="#7a1620"/></marker></defs>
+      <rect x="60" y="230" width="160" height="90" fill="#f7f2e7" stroke="#54101a" stroke-width="1.6"/>
+      <text x="140" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#54101a">USER</text>
+      <text x="140" y="288" text-anchor="middle" font-size="10.5" fill="#413d33">(External Entity)</text>
+
+      <circle cx="500" cy="275" r="130" fill="#7a1620"/>
+      <text x="500" y="262" text-anchor="middle" font-size="16" font-weight="800" fill="#fff">0</text>
+      <text x="500" y="284" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">FinTrack</text>
+      <text x="500" y="302" text-anchor="middle" font-size="12" fill="#f1e9d6">Personal Finance System</text>
+
+      <rect x="780" y="230" width="160" height="90" fill="#f7f2e7" stroke="#54101a" stroke-width="1.6"/>
+      <text x="860" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#54101a">ADMIN</text>
+      <text x="860" y="288" text-anchor="middle" font-size="10.5" fill="#413d33">(External Entity)</text>
+
+      <!-- user -> system -->
+      <path d="M220 250 L378 235" stroke="#7a1620" stroke-width="1.6" fill="none" marker-end="url(#c0)"/>
+      <text x="230" y="228" font-size="11" fill="#54101a">Signup / Login / Transactions /</text>
+      <text x="230" y="242" font-size="11" fill="#54101a">Categories / Budgets / Recurring</text>
+
+      <!-- system -> user -->
+      <path d="M378 320 L220 305" stroke="#7a1620" stroke-width="1.6" fill="none" marker-end="url(#c0)"/>
+      <text x="235" y="338" font-size="11" fill="#54101a">Dashboard, Reports, Alerts, Confirmations</text>
+
+      <!-- admin -> system -->
+      <path d="M780 250 L622 235" stroke="#7a1620" stroke-width="1.6" fill="none" marker-end="url(#c0)"/>
+      <text x="640" y="228" font-size="11" fill="#54101a">Role updates, user queries</text>
+
+      <!-- system -> admin -->
+      <path d="M622 320 L780 305" stroke="#7a1620" stroke-width="1.6" fill="none" marker-end="url(#c0)"/>
+      <text x="640" y="338" font-size="11" fill="#54101a">User list, aggregate totals</text>
+
+      <text x="500" y="500" text-anchor="middle" font-size="11.5" fill="#8a8171" font-style="italic">The whole FinTrack API is treated as one process (bubble 0); User and Admin are the only external entities.</text>
+    </svg>
+  </div>
+  <p class="caption">Fig. 12.1 &mdash; DFD Level 0 (Context Diagram)</p>
+  <div class="pageno">14</div>
+</div>
+
+<!-- ============ PAGE 18 — DFD LEVEL 1 ============ -->
+<div class="sheet">
+  <h2 class="section-title">DFD &mdash; Level 1</h2>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg" font-family="Inter,Arial,sans-serif">
+      <defs><marker id="c1" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8" fill="#7a1620"/></marker></defs>
+      <style>.proc{fill:#7a1620;} .ptxt{fill:#fff;font-size:12px;font-weight:700;} .ds{fill:#f1e9d6;stroke:#8a8171;stroke-width:1.3;} .dstxt{fill:#54101a;font-size:11px;font-weight:700;} .ext{fill:#f7f2e7;stroke:#54101a;stroke-width:1.6;} .flow{stroke:#7a1620;stroke-width:1.3;fill:none;} .flbl{fill:#413d33;font-size:9.5px;}</style>
+
+      <!-- external entities -->
+      <rect x="10" y="380" width="130" height="70" class="ext"/><text x="75" y="420" text-anchor="middle" font-size="12" font-weight="700" fill="#54101a">USER</text>
+      <rect x="1260" y="380" width="130" height="70" class="ext"/><text x="1325" y="420" text-anchor="middle" font-size="12" font-weight="700" fill="#54101a">ADMIN</text>
+
+      <!-- processes -->
+      <circle cx="260" cy="90" r="62" class="proc"/><text x="260" y="83" text-anchor="middle" class="ptxt">1.0</text><text x="260" y="100" text-anchor="middle" class="ptxt" font-size="10.5">Auth &amp; Profile</text>
+      <circle cx="480" cy="90" r="62" class="proc"/><text x="480" y="83" text-anchor="middle" class="ptxt">2.0</text><text x="480" y="100" text-anchor="middle" class="ptxt" font-size="10.5">Categories</text>
+      <circle cx="700" cy="90" r="62" class="proc"/><text x="700" y="83" text-anchor="middle" class="ptxt">3.0</text><text x="700" y="100" text-anchor="middle" class="ptxt" font-size="10.5">Transactions</text>
+      <circle cx="920" cy="90" r="62" class="proc"/><text x="920" y="83" text-anchor="middle" class="ptxt">4.0</text><text x="920" y="100" text-anchor="middle" class="ptxt" font-size="10.5">Budgets</text>
+
+      <circle cx="360" cy="640" r="62" class="proc"/><text x="360" y="633" text-anchor="middle" class="ptxt">5.0</text><text x="360" y="650" text-anchor="middle" class="ptxt" font-size="10.5">Alert Detection</text>
+      <circle cx="600" cy="640" r="62" class="proc"/><text x="600" y="633" text-anchor="middle" class="ptxt">6.0</text><text x="600" y="650" text-anchor="middle" class="ptxt" font-size="10.5">Recurring Engine</text>
+      <circle cx="840" cy="640" r="62" class="proc"/><text x="840" y="633" text-anchor="middle" class="ptxt">7.0</text><text x="840" y="650" text-anchor="middle" class="ptxt" font-size="10.5">Reports</text>
+      <circle cx="1080" cy="640" r="62" class="proc"/><text x="1080" y="633" text-anchor="middle" class="ptxt">8.0</text><text x="1080" y="650" text-anchor="middle" class="ptxt" font-size="10.5">Admin Panel</text>
+
+      <!-- data stores -->
+      <rect x="120" y="260" width="140" height="46" class="ds"/><text x="190" y="288" text-anchor="middle" class="dstxt">D1 Users</text>
+      <rect x="380" y="260" width="140" height="46" class="ds"/><text x="450" y="288" text-anchor="middle" class="dstxt">D2 Categories</text>
+      <rect x="640" y="260" width="140" height="46" class="ds"/><text x="710" y="288" text-anchor="middle" class="dstxt">D3 Transactions</text>
+      <rect x="900" y="260" width="140" height="46" class="ds"/><text x="970" y="288" text-anchor="middle" class="dstxt">D4 Budgets</text>
+      <rect x="260" y="480" width="150" height="46" class="ds"/><text x="335" y="508" text-anchor="middle" class="dstxt">D5 Budget Alerts</text>
+      <rect x="520" y="480" width="170" height="46" class="ds"/><text x="605" y="508" text-anchor="middle" class="dstxt">D6 Recurring Txns</text>
+
+      <!-- ext -> proc -->
+      <path d="M140 400 C170 300 200 180 210 145" class="flow" marker-end="url(#c1)"/>
+      <path d="M140 420 C300 380 380 200 440 140" class="flow" marker-end="url(#c1)"/>
+      <path d="M140 440 C400 480 560 300 660 140" class="flow" marker-end="url(#c1)"/>
+      <path d="M140 460 C500 560 750 480 880 140" class="flow" marker-end="url(#c1)"/>
+      <path d="M140 480 C220 560 280 610 300 620" class="flow" marker-end="url(#c1)"/>
+      <path d="M140 500 C300 610 460 640 540 640" class="flow" marker-end="url(#c1)"/>
+      <path d="M140 520 C400 680 700 700 780 650" class="flow" marker-end="url(#c1)"/>
+      <text x="150" y="280" class="flbl">credentials</text>
+      <text x="180" y="230" class="flbl">category data</text>
+      <text x="230" y="330" class="flbl">transaction data</text>
+      <text x="320" y="380" class="flbl">budget limits</text>
+      <text x="200" y="560" class="flbl">acknowledge alert</text>
+      <text x="260" y="600" class="flbl">schedule data</text>
+      <text x="400" y="700" class="flbl">report filters</text>
+
+      <!-- proc -> ds -->
+      <path d="M260 152 L200 260" class="flow" marker-end="url(#c1)"/>
+      <path d="M480 152 L450 260" class="flow" marker-end="url(#c1)"/>
+      <path d="M700 152 L710 260" class="flow" marker-end="url(#c1)"/>
+      <path d="M920 152 L970 260" class="flow" marker-end="url(#c1)"/>
+      <path d="M360 578 L340 526" class="flow" marker-end="url(#c1)"/>
+      <path d="M600 578 L610 526" class="flow" marker-end="url(#c1)"/>
+
+      <!-- cross links -->
+      <path d="M710 306 L390 610" class="flow" stroke-dasharray="4,3" marker-end="url(#c1)"/>
+      <text x="480" y="470" class="flbl" font-style="italic">reads spend %</text>
+      <path d="M970 306 L390 605" class="flow" stroke-dasharray="4,3" marker-end="url(#c1)"/>
+
+      <path d="M610 578 L710 300" class="flow" stroke-dasharray="4,3" marker-end="url(#c1)"/>
+      <text x="660" y="440" class="flbl" font-style="italic">posts new txn</text>
+
+      <path d="M780 302 L810 578" class="flow" marker-end="url(#c1)"/>
+      <path d="M970 302 L860 580" class="flow" marker-end="url(#c1)"/>
+      <path d="M710 302 L790 610" class="flow" marker-end="url(#c1)"/>
+
+      <path d="M190 306 L1050 605" class="flow" stroke-dasharray="2,3" marker-end="url(#c1)"/>
+      <text x="700" y="380" class="flbl" font-style="italic">all-user totals</text>
+
+      <!-- proc -> admin -->
+      <path d="M1142 645 L1260 425" class="flow" marker-end="url(#c1)"/>
+      <text x="1180" y="540" class="flbl">users &amp; totals</text>
+      <path d="M1260 405 L1142 630" class="flow" marker-end="url(#c1)"/>
+      <text x="1180" y="500" class="flbl">role change</text>
+    </svg>
+  </div>
+  <p class="caption">Fig. 12.2 &mdash; DFD Level 1: eight core processes reading/writing the six MongoDB collections.</p>
+  <div class="pageno">15</div>
+</div>
+
+<!-- ============ PAGE 19 — UML USE CASE ============ -->
+<div class="sheet">
+  <h2 class="section-title">UML &mdash; Use Case Diagram</h2>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 1000 720" xmlns="http://www.w3.org/2000/svg" font-family="Inter,Arial,sans-serif">
+      <style>.uc{fill:#f7f2e7;stroke:#7a1620;stroke-width:1.4;} .uct{fill:#1c1a15;font-size:11px;} .actor{fill:none;stroke:#54101a;stroke-width:2;} .asoc{stroke:#8a8171;stroke-width:1.2;fill:none;}</style>
+      <rect x="0" y="0" width="1000" height="720" fill="none" stroke="#8a8171" stroke-dasharray="5,4" rx="10"/>
+      <text x="500" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#54101a">FinTrack System</text>
+
+      <!-- Actor: User -->
+      <g transform="translate(60,320)">
+        <circle cx="0" cy="-40" r="14" class="actor"/>
+        <line x1="0" y1="-26" x2="0" y2="20" class="actor"/>
+        <line x1="-22" y1="0" x2="22" y2="0" class="actor"/>
+        <line x1="0" y1="20" x2="-18" y2="55" class="actor"/>
+        <line x1="0" y1="20" x2="18" y2="55" class="actor"/>
+        <text x="0" y="75" text-anchor="middle" font-size="12" font-weight="700" fill="#54101a">User</text>
+      </g>
+      <!-- Actor: Admin -->
+      <g transform="translate(940,320)">
+        <circle cx="0" cy="-40" r="14" class="actor"/>
+        <line x1="0" y1="-26" x2="0" y2="20" class="actor"/>
+        <line x1="-22" y1="0" x2="22" y2="0" class="actor"/>
+        <line x1="0" y1="20" x2="-18" y2="55" class="actor"/>
+        <line x1="0" y1="20" x2="18" y2="55" class="actor"/>
+        <text x="0" y="75" text-anchor="middle" font-size="12" font-weight="700" fill="#54101a">Admin</text>
+      </g>
+
+      <!-- use cases -->
+      <g font-size="11">
+        <ellipse cx="260" cy="70" rx="105" ry="28" class="uc"/><text x="260" y="74" text-anchor="middle" class="uct">Register / Login</text>
+        <ellipse cx="480" cy="70" rx="110" ry="28" class="uc"/><text x="480" y="74" text-anchor="middle" class="uct">Manage Transactions</text>
+        <ellipse cx="720" cy="70" rx="110" ry="28" class="uc"/><text x="720" y="74" text-anchor="middle" class="uct">Import / Export CSV</text>
+
+        <ellipse cx="260" cy="160" rx="105" ry="28" class="uc"/><text x="260" y="164" text-anchor="middle" class="uct">Manage Categories</text>
+        <ellipse cx="480" cy="160" rx="110" ry="28" class="uc"/><text x="480" y="164" text-anchor="middle" class="uct">Set Monthly Budgets</text>
+        <ellipse cx="720" cy="160" rx="110" ry="28" class="uc"/><text x="720" y="164" text-anchor="middle" class="uct">View / Acknowledge Alerts</text>
+
+        <ellipse cx="260" cy="250" rx="105" ry="28" class="uc"/><text x="260" y="254" text-anchor="middle" class="uct">Schedule Recurring Txn</text>
+        <ellipse cx="480" cy="250" rx="110" ry="28" class="uc"/><text x="480" y="254" text-anchor="middle" class="uct">View Calendar</text>
+        <ellipse cx="720" cy="250" rx="110" ry="28" class="uc"/><text x="720" y="254" text-anchor="middle" class="uct">View Reports / Dashboard</text>
+
+        <ellipse cx="360" cy="420" rx="120" ry="28" class="uc"/><text x="360" y="424" text-anchor="middle" class="uct">Change Currency / Settings</text>
+        <ellipse cx="640" cy="420" rx="120" ry="28" class="uc"/><text x="640" y="424" text-anchor="middle" class="uct">Manage User Roles</text>
+        <ellipse cx="640" cy="510" rx="130" ry="28" class="uc"/><text x="640" y="514" text-anchor="middle" class="uct">View All-User Totals</text>
+      </g>
+
+      <!-- User associations -->
+      <path d="M105 300 L200 90" class="asoc"/>
+      <path d="M105 305 L390 85" class="asoc"/>
+      <path d="M105 310 L630 80" class="asoc"/>
+      <path d="M105 315 L190 155" class="asoc"/>
+      <path d="M105 320 L400 165" class="asoc"/>
+      <path d="M105 325 L640 165" class="asoc"/>
+      <path d="M105 330 L195 255" class="asoc"/>
+      <path d="M105 335 L400 255" class="asoc"/>
+      <path d="M105 340 L640 255" class="asoc"/>
+      <path d="M105 345 L280 415" class="asoc"/>
+
+      <!-- Admin associations -->
+      <path d="M900 300 L720 435" class="asoc"/>
+      <path d="M900 310 L700 505" class="asoc"/>
+      <path d="M900 320 L560 90" class="asoc" stroke-dasharray="4,3"/>
+      <text x="760" y="180" font-size="9.5" fill="#8a8171" font-style="italic">&laquo;include&raquo; login required</text>
+    </svg>
+  </div>
+  <p class="caption">Fig. 12.3 &mdash; UML Use-Case diagram: two actors (User, Admin) and their principal use cases.</p>
+  <div class="pageno">16</div>
+</div>
+
+<!-- ============ PAGE 20+ — SCREENSHOTS ============ -->
+<div class="sheet">
+  <h2 class="section-title">Input / Output Screens</h2>
+  <div class="shot-grid">
+    <div class="shot"><img src="/_blob/67946234a9ff4b391a36a74d7e7a47b3" alt="Landing page"/><div class="lbl">1. Landing page &mdash; product overview and live cashflow preview card</div></div>
+    <div class="shot"><img src="/_blob/1e46b7c8db36e2959d7c3ed80176c25e" alt="Dashboard"/><div class="lbl">2. Dashboard &mdash; monthly income/expense/balance, budget alert banner, income-vs-expense and category charts</div></div>
+  </div>
+  <div class="pageno">17</div>
+</div>
+
+<div class="sheet">
+  <div class="shot-grid">
+    <div class="shot"><img src="/_blob/3e0b65d623d290b4b9f1acaec274802b" alt="Transactions"/><div class="lbl">3. Transactions &mdash; filterable ledger with CSV import/export and inline edit/delete</div></div>
+    <div class="shot"><img src="/_blob/8883a73b11a8e80c8ff0e7474f92edb0" alt="Recurring"/><div class="lbl">4. Recurring &mdash; active schedules and their monthly net impact</div></div>
+  </div>
+  <div class="pageno">18</div>
+</div>
+
+<div class="sheet">
+  <div class="shot-grid">
+    <div class="shot"><img src="/_blob/b78532da7a9cd8c95addbc0208f61943" alt="Calendar"/><div class="lbl">5. Calendar &mdash; upcoming recurring dues and reminders for the selected month</div></div>
+    <div class="shot"><img src="/_blob/457e0cab7ffa85db6efd2c6672336abd" alt="Categories"/><div class="lbl">6. Categories &mdash; default vs. custom income/expense categories</div></div>
+  </div>
+  <div class="pageno">19</div>
+</div>
+
+<div class="sheet">
+  <div class="shot-grid">
+    <div class="shot"><img src="/_blob/49cf40cf1b2f4a01ff070f6f51d70d7c" alt="Budgets"/><div class="lbl">7. Budgets &mdash; monthly limit per category with live spent/remaining progress bar</div></div>
+    <div class="shot"><img src="/_blob/f2069cc2f24e6387315d4cf19a8c26f4" alt="Reports"/><div class="lbl">8. Reports &mdash; expense-by-category pie chart and monthly income/expense trend</div></div>
+  </div>
+  <div class="pageno">20</div>
+</div>
+
+<!-- ============ LIMITATIONS ============ -->
+<div class="sheet">
+  <h2 class="section-title">Limitations</h2>
+  <p>Although the proposed system fulfils its stated objectives, it has the following limitations:</p>
+  <ol>
+    <li>The system currently manages a single individual's finances per account; joint/shared household
+    budgeting across multiple linked accounts is not yet supported.</li>
+    <li>There is no direct bank / UPI API integration &mdash; transactions must be entered manually or imported
+    via CSV rather than being fetched automatically.</li>
+    <li>The recurring-transaction "materializer" must be triggered (manually or by a scheduler) rather than
+    running as an always-on background cron job in the current build.</li>
+    <li>Budget alerts are evaluated per category per month; there is no overall "total monthly budget" alert
+    across all categories combined.</li>
+    <li>The system has been tested with a limited volume of sample data and may need further load-testing
+    before large-scale, multi-thousand-user deployment.</li>
+    <li>Advanced features such as investment tracking, multi-currency conversion (rather than per-user display
+    currency), and a native mobile app are planned but not yet implemented.</li>
+  </ol>
+  <div class="pageno">21</div>
+</div>
+
+<!-- ============ CONCLUSION ============ -->
+<div class="sheet">
+  <h2 class="section-title">Conclusion</h2>
+  <p>FinTrack successfully demonstrates a complete, secure, full-stack solution to the problem of manual,
+  fragmented personal finance tracking. By modelling money as structured data &mdash; a user, a category, an
+  amount, a type and a date &mdash; the system is able to automate everything that used to require manual effort:
+  totals update instantly, budgets are watched continuously, alerts fire exactly once at the right threshold,
+  and recurring bills post themselves on schedule.</p>
+  <p>The project also demonstrates sound software-engineering practice: the back-end enforces every business
+  rule (password hashing, per-user data isolation, unique compound indexes to prevent duplicate budgets/alerts)
+  at the model layer so it can never be bypassed by a route, while the front-end offers a clean, responsive,
+  role-aware interface built from reusable components.</p>
+  <p>From the analysis of its objectives against the finished build, it can be concluded that FinTrack is a
+  reliable, extensible, and genuinely useful personal-finance tool &mdash; one that reduces the manual work of
+  bookkeeping to almost nothing while giving the user a far clearer, real-time view of their money than a
+  notebook or spreadsheet ever could. The modular structure of its six data collections and REST API also means
+  the system can be extended in the future &mdash; shared household budgets, bank-feed integration, or a mobile
+  client &mdash; without redesigning the core.</p>
+  <div class="pageno">22</div>
+</div>
+
+<!-- ============ BIBLIOGRAPHY ============ -->
+<div class="sheet">
+  <h2 class="section-title">Bibliography</h2>
+  <p style="font-weight:700; margin-bottom:6px;">Books &amp; Documentation</p>
+  <ul>
+    <li>MongoDB, Inc. &mdash; <em>The MongoDB Manual</em> (Mongoose ODM &amp; schema design)</li>
+    <li>Node.js Foundation &mdash; <em>Node.js and Express.js Official Documentation</em></li>
+    <li>Meta / React Team &mdash; <em>React 19 Documentation</em></li>
+    <li>Tailwind Labs &mdash; <em>Tailwind CSS v4 Documentation</em></li>
+    <li>Fowler, M. &mdash; <em>Patterns of Enterprise Application Architecture</em></li>
+  </ul>
+  <p style="font-weight:700; margin:14px 0 6px;">Websites</p>
+  <ul>
+    <li>reactjs.org &amp; react.dev</li>
+    <li>expressjs.com</li>
+    <li>mongoosejs.com</li>
+    <li>developer.mozilla.org (MDN Web Docs)</li>
+    <li>stackoverflow.com</li>
+  </ul>
+  <div class="pageno">23</div>
+</div>
